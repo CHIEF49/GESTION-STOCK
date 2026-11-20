@@ -174,6 +174,8 @@ td.note{color:var(--muted);font-size:13px;max-width:260px;white-space:pre-line}
 .seg button{flex:1;border:0;background:none;padding:10px;cursor:pointer;font-weight:600}
 .seg button.on.in{background:var(--ok-soft);color:var(--ok)}
 .seg button.on.out{background:var(--bad-soft);color:var(--bad)}
+.login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:12vh 14px;z-index:25}
+.login[hidden]{display:none}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;max-width:90vw}
 .toast.on{opacity:1}
 textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--bg)}
@@ -196,6 +198,8 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
     </div>
     <div class="hspacer"></div>
     <div id="status" class="status-line" role="status">Connexion…</div>
+    <span id="who" class="hint hide-m"></span>
+    <button class="btn sm" id="logout" hidden>Se déconnecter</button>
   </header>
 
   <div class="tabs" id="tabs" role="tablist">
@@ -302,6 +306,23 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
   </p>
 </div>
 
+<!-- Connexion -->
+<div class="login" id="login" hidden>
+  <form class="modal" id="login-form" style="max-width:380px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div class="logo" style="width:32px;height:32px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+      <h2 style="margin:0">Atelier — Stock</h2>
+    </div>
+    <div class="fld"><label for="l-email">E-mail</label><input id="l-email" name="email" type="email" autocomplete="username" required></div>
+    <div class="fld"><label for="l-pass">Mot de passe</label><input id="l-pass" name="password" type="password" autocomplete="current-password" required></div>
+    <p class="hint" id="login-msg" role="alert" style="color:var(--bad);min-height:1.2em;margin:0 0 8px"></p>
+    <div class="mfoot">
+      <button type="button" class="btn sm left" id="login-reset">Mot de passe oublié</button>
+      <button type="submit" class="btn primary">Se connecter</button>
+    </div>
+  </form>
+</div>
+
 <!-- Modals -->
 <div class="overlay" id="ov"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" role="status"></div>
@@ -338,8 +359,8 @@ function fmtShort(ms){ const d=new Date(ms); return d.toLocaleDateString("fr-FR"
 function cmp(a,b,k,d){ let x=a[k], y=b[k]; if(k==="quantity"||k==="minQty"){x=+x||0;y=+y||0; return (x-y)*d;} return norm(x).localeCompare(norm(y),"fr",{numeric:true})*d || norm(a.name).localeCompare(norm(b.name),"fr"); }
 function writeErr(e){
   console.warn(e);
-  if(e && e.code==="invalid_argument"){ canWrite=false; applyWrite(); toast("Vous n'avez pas les droits de modification sur ce stock."); }
-  else if(e && e.code==="quota_exceeded"){ toast("Capacité de stockage atteinte : supprimez d'anciens éléments."); }
+  if(e && (e.code==="permission-denied"||e.code==="invalid_argument")){ canWrite=false; applyWrite(); toast("Vous n'avez pas les droits de modification sur ce stock."); }
+  else if(e && (e.code==="resource-exhausted"||e.code==="quota_exceeded")){ toast("Capacité de stockage atteinte : supprimez d'anciens éléments."); }
   else toast("Enregistrement impossible pour le moment, réessayez.");
 }
 function applyWrite(){ document.querySelectorAll(".w").forEach(b=>b.disabled=!canWrite); }
@@ -743,17 +764,14 @@ function typingInComptoir(){ const a=document.activeElement; return tab==="compt
 const h0=location.hash.slice(1);
 goTab(TABS.includes(h0) ? h0 : (window.matchMedia("(max-width:760px)").matches ? "comptoir" : "dash"));
 
+window.addEventListener("stock-error", e=>setStatus(e.detail, "err"));
+const dbReady = new Promise(r=>{ if(window.stockDb) r(window.stockDb); else window.addEventListener("stock-db", ()=>r(window.stockDb), {once:true}); });
 (async ()=>{
-  if(!window.claude || !window.claude.use){ setStatus("Ouvrez cette page depuis Claude pour accéder au stock.", "err"); return; }
-  db = await window.claude.use("db");
-  if(!db){ setStatus("Stock inaccessible depuis cette vue (connectez-vous).", "err"); canWrite=false; applyWrite(); return; }
-  try{
-    const user = await window.claude.use("user");
-    if(user && user.can){ const c = await user.can("data.write"); if(c===false){ canWrite=false; applyWrite(); } }
-  }catch{}
+  db = await dbReady;
+  setStatus("Connexion…");
   const timer=setTimeout(()=>setStatus("Le stock ne répond pas encore : les données peuvent être incomplètes.", "err"),10000);
   const done=()=>{ if(loaded.pieces){ clearTimeout(timer); setStatus(canWrite?"Synchronisé":"Lecture seule", canWrite?"ok":""); } };
-  const onErr=e=>{ clearTimeout(timer); setStatus("Connexion au stock perdue. Rechargez la page.", "err"); console.warn(e); };
+  const onErr=e=>{ clearTimeout(timer); setStatus(e&&e.code==="permission-denied"?"Ce compte n'a pas accès au stock.":"Connexion au stock perdue. Rechargez la page.", "err"); console.warn(e); };
   db.collection("pieces").onSnapshot(s=>{
     pieces=s.docs.map(d=>({...d.data(),_id:d.id})); if(!s.metadata.fromCache) loaded.pieces=true; else loaded.pieces=loaded.pieces||s.size>0;
     if(typingInComptoir()) refreshCounts();
@@ -768,5 +786,6 @@ goTab(TABS.includes(h0) ? h0 : (window.matchMedia("(max-width:760px)").matches ?
 })();
 })();
 </script>
+<script type="module" src="./firebase-store.js"></script>
 </body>
 </html>

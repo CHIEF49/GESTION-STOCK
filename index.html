@@ -33,63 +33,130 @@ button,input,select,textarea{font:inherit;color:inherit}
 header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
 .logo{width:38px;height:38px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:#fff;flex:none}
 h1{font-size:20px;margin:0;font-weight:700;letter-spacing:-.01em}
+h2.sec{font-size:17px;margin:0;font-weight:700}
 .sub{color:var(--muted);font-size:13px}
 .hspacer{flex:1}
-.status-line{font-size:12.5px;color:var(--muted)}
-.status-line.err{color:var(--bad)}
+.status-line{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.status-line::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status-line.ok::before{background:var(--ok)}
+.status-line.err{color:var(--bad)} .status-line.err::before{background:var(--bad)}
 
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);cursor:default}
-.kpi.click{cursor:pointer}
-.kpi.click:hover{border-color:var(--accent)}
-.kpi .v{font-size:24px;font-weight:700;line-height:1.1}
-.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
-.kpi.bad .v{color:var(--bad)} .kpi.warn .v{color:var(--warn)} .kpi.info .v{color:var(--info)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);text-align:left;width:100%}
+button.kpi{cursor:pointer}
+button.kpi:hover{border-color:var(--accent)}
+.kpi .v{font-size:24px;font-weight:700;line-height:1.1;display:block}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px;display:block}
+.kpi.bad .v{color:var(--bad)} .kpi.warn .v{color:var(--warn)}
 
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
-.tab{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab{background:none;border:0;padding:10px 14px;min-height:44px;cursor:pointer;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
 .tab.on{color:var(--ink);border-bottom-color:var(--accent)}
 .tab .n{font-size:12px;background:var(--grey-soft);border-radius:20px;padding:1px 7px;margin-left:6px;color:var(--muted)}
+.tab .n.bad{background:var(--bad-soft);color:var(--bad);font-weight:600}
 
 .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .search{flex:1;min-width:200px;position:relative}
-.search input{width:100%;padding:9px 12px 9px 34px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:42px}
 .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted)}
-select.f{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
-.btn{border:1px solid var(--line);background:var(--panel);padding:8px 13px;border-radius:8px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+select.f{padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:42px}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 13px;min-height:42px;border-radius:8px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
 .btn:hover{border-color:var(--muted)}
-.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 .btn.primary:hover{filter:brightness(1.07)}
 .btn.danger{color:var(--bad)}
-.btn.sm{padding:5px 9px;font-size:13px}
+.btn.sm{padding:5px 10px;min-height:34px;font-size:13px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 11px;font-size:13px;cursor:pointer}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 12px;min-height:36px;font-size:13px;cursor:pointer}
 .chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--panel);cursor:pointer;user-select:none;white-space:nowrap}
 th.nosort{cursor:default}
+th.r,td.r{text-align:right}
 td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 tbody tr:hover{background:color-mix(in srgb,var(--accent) 4%,transparent)}
 td.note{color:var(--muted);font-size:13px;max-width:260px;white-space:pre-line}
 .dev{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:5px;background:var(--grey-soft);white-space:nowrap}
 .qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-.qty button{border:0;background:none;width:30px;height:30px;cursor:pointer;font-size:17px;color:var(--muted)}
+.qty button{border:0;background:none;width:32px;height:32px;cursor:pointer;font-size:17px;color:var(--muted)}
 .qty button:hover{background:var(--grey-soft);color:var(--ink)}
-.qty .q{min-width:38px;text-align:center;font-weight:700;cursor:pointer}
+.qty .q{min-width:38px;text-align:center;font-weight:700;cursor:pointer;border:0;background:none;padding:0;height:32px}
 .qty.zero .q{color:var(--bad)} .qty.low .q{color:var(--warn)}
-.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
 .t-ok{background:var(--ok-soft);color:var(--ok)} .t-warn{background:var(--warn-soft);color:var(--warn)}
-.t-bad{background:var(--bad-soft);color:var(--bad)} .t-info{background:var(--info-soft);color:var(--info)}
-.t-violet{background:var(--violet-soft);color:var(--violet)} .t-grey{background:var(--grey-soft);color:var(--muted)}
+.t-bad{background:var(--bad-soft);color:var(--bad)} .t-grey{background:var(--grey-soft);color:var(--muted)}
 .empty{padding:40px;text-align:center;color:var(--muted)}
-.rowbtn{background:none;border:0;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px}
+.rowbtn{background:none;border:0;cursor:pointer;color:var(--muted);padding:6px;border-radius:6px}
 .rowbtn:hover{background:var(--grey-soft);color:var(--ink)}
 .plus{color:var(--ok);font-weight:700} .minus{color:var(--bad);font-weight:700}
+.hint{font-size:12.5px;color:var(--muted)}
+
+/* tableau de bord */
+.cols{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.cols .main{flex:999 1 560px;min-width:0}
+.cols .side{flex:1 1 300px;min-width:0}
+.chead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line)}
+.chead h2{flex:1 1 180px}
+.feed{list-style:none;margin:0;padding:0}
+.feed li{display:flex;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.feed li:last-child{border-bottom:0}
+.feed .d{min-width:46px;text-align:center}
+.feed .t{flex:1;min-width:0}
+.feed .t b{font-weight:500;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ok-banner{padding:28px 14px;text-align:center;color:var(--muted)}
+
+/* machines */
+.mlist{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:2px}
+.mbtn{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border-radius:8px;border:0;background:none;cursor:pointer;text-align:left;width:100%}
+.mbtn:hover{background:var(--grey-soft)}
+.mbtn.on{background:var(--accent-soft);font-weight:500}
+.mbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mbtn .c{font-size:12px;font-weight:600;border-radius:20px;padding:1px 8px;background:var(--grey-soft)}
+.mbtn.on .c{background:var(--panel)}
+.mcols{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.mcols nav{flex:1 1 220px;max-width:280px}
+.mcols main{flex:999 1 560px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.grid-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.pc{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.pc:hover{border-color:var(--muted)}
+.pc .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pc .nm{font-weight:600}
+.pc .qv{font-size:24px;font-weight:700;line-height:1.1}
+.pc .qv.zero{color:var(--bad)} .pc .qv.low{color:var(--warn)}
+.bar{height:6px;border-radius:20px;background:var(--grey-soft);overflow:hidden}
+.bar i{display:block;height:100%}
+.pc .foot{display:flex;align-items:center;gap:6px}
+.pc .foot .sp{flex:1}
+.mini{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px 14px;display:flex;align-items:center;gap:10px}
+.mini .t{flex:1;min-width:0}
+
+/* comptoir */
+.cpt{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.cpt .lbl{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.plist{display:flex;flex-direction:column;gap:6px}
+.pick{display:flex;align-items:center;gap:10px;min-height:60px;padding:8px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);cursor:pointer;text-align:left;width:100%}
+.pick.on{border:2px solid var(--accent);padding:7px 11px}
+.pick .t{flex:1;min-width:0}
+.pick .t b{display:block;font-weight:600}
+.pick .qv{font-size:20px;font-weight:700}
+.pick .qv.zero{color:var(--bad)} .pick .qv.low{color:var(--warn)}
+.bigseg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px}
+.bigseg button{height:50px;border-radius:8px;border:0;background:none;font-weight:600;color:var(--muted);cursor:pointer}
+.bigseg button.on.out{background:var(--bad-soft);color:var(--bad)}
+.bigseg button.on.in{background:var(--ok-soft);color:var(--ok)}
+.stepper{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px}
+.stepper button{width:64px;height:64px;border-radius:8px;border:1px solid var(--line);background:var(--grey-soft);font-size:28px;cursor:pointer}
+.stepper .v{text-align:center}
+.stepper .v b{display:block;font-size:40px;line-height:1.1}
+.cpt input.free{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:44px}
+.btn.big{width:100%;min-height:56px;font-size:17px;font-weight:700}
 
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-start;justify-content:center;padding:6vh 14px;z-index:20;overflow:auto}
@@ -101,82 +168,124 @@ td.note{color:var(--muted);font-size:13px;max-width:260px;white-space:pre-line}
 .fld label{font-size:12.5px;color:var(--muted);font-weight:500}
 .fld input,.fld select,.fld textarea{padding:8px 10px;border:1px solid var(--line);border-radius:7px;background:var(--bg)}
 .fld textarea{min-height:64px;resize:vertical}
-.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;align-items:center}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:8px;align-items:center;flex-wrap:wrap}
 .mfoot .left{margin-right:auto}
 .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:10px}
-.seg button{flex:1;border:0;background:none;padding:8px;cursor:pointer;font-weight:600}
+.seg button{flex:1;border:0;background:none;padding:10px;cursor:pointer;font-weight:600}
 .seg button.on.in{background:var(--ok-soft);color:var(--ok)}
 .seg button.on.out{background:var(--bad-soft);color:var(--bad)}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:30;max-width:90vw}
 .toast.on{opacity:1}
-.hint{font-size:12.5px;color:var(--muted)}
 textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-size:12px;padding:8px;border:1px solid var(--line);border-radius:7px;background:var(--bg)}
 
 @media (max-width:760px){
   .hide-m{display:none}
   td,th{padding:8px}
   .grid2{grid-template-columns:1fr}
+  .mcols nav{max-width:none}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+    <div class="logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
     <div>
       <h1>Atelier — Stock</h1>
       <div class="sub">Pièces détachées</div>
     </div>
     <div class="hspacer"></div>
-    <div id="status" class="status-line">Connexion…</div>
+    <div id="status" class="status-line" role="status">Connexion…</div>
   </header>
 
-  <div class="kpis" id="kpis"></div>
-
-  <div class="tabs" id="tabs">
-    <button class="tab on" data-tab="pieces">Pièces<span class="n" id="n-pieces">0</span></button>
+  <div class="tabs" id="tabs" role="tablist">
+    <button class="tab" data-tab="dash">Tableau de bord<span class="n" id="n-alert">0</span></button>
+    <button class="tab" data-tab="pieces">Pièces<span class="n" id="n-pieces">0</span></button>
+    <button class="tab" data-tab="machines">Machines<span class="n" id="n-machines">0</span></button>
+    <button class="tab" data-tab="comptoir">Comptoir</button>
     <button class="tab" data-tab="mvts">Historique</button>
   </div>
 
+  <!-- TABLEAU DE BORD -->
+  <section id="v-dash" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="cols">
+      <div class="main card">
+        <div class="chead">
+          <h2 class="sec">À commander</h2>
+          <button class="btn sm" id="d-csv">Copier CSV</button>
+        </div>
+        <div id="d-todo"></div>
+        <p class="hint" style="padding:10px 14px;margin:0;border-top:1px solid var(--line)">Quantité suggérée : de quoi remonter au double du seuil mini (1 pièce s'il n'y a pas de seuil).</p>
+      </div>
+      <div class="side card">
+        <div class="chead"><h2 class="sec">Derniers mouvements</h2></div>
+        <ul class="feed" id="d-feed"></ul>
+        <div style="padding:8px 14px;border-top:1px solid var(--line)"><button class="btn sm" id="d-hist">Voir tout l'historique</button></div>
+      </div>
+    </div>
+  </section>
+
   <!-- PIECES -->
-  <section id="v-pieces">
+  <section id="v-pieces" hidden>
     <div class="toolbar">
       <div class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="p-q" placeholder="Rechercher une référence, une désignation, une note…">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <label class="sr" for="p-q">Rechercher une pièce</label>
+        <input id="p-q" type="search" placeholder="Référence, désignation, appareil, note…">
       </div>
+      <label class="sr" for="p-dev">Appareil</label>
       <select class="f" id="p-dev"></select>
-      <select class="f" id="p-lvl">
-        <option value="">Tous niveaux</option>
-        <option value="zero">En rupture (0)</option>
-        <option value="low">Stock bas</option>
-        <option value="ok">En stock</option>
-      </select>
+      <div class="chips" id="p-lvl" role="group" aria-label="Filtrer par état">
+        <button class="chip on" data-l="">Tout</button>
+        <button class="chip" data-l="ok">En stock</button>
+        <button class="chip" data-l="low">Stock bas</button>
+        <button class="chip" data-l="zero">Rupture</button>
+      </div>
       <button class="btn" id="p-csv">Copier CSV</button>
       <button class="btn primary w" id="p-add">+ Nouvelle pièce</button>
     </div>
-    <div class="card"><table>
+    <div class="card scroll"><table>
       <thead><tr>
         <th data-s="reference">Référence</th>
         <th data-s="name">Désignation</th>
-        <th data-s="device">Appareil</th>
+        <th data-s="device" class="hide-m">Appareil</th>
+        <th data-s="location" class="hide-m">Emplacement</th>
         <th data-s="quantity">Qté</th>
-        <th class="nosort hide-m">Note</th>
-        <th class="nosort"></th>
+        <th data-s="minQty" class="hide-m">Seuil mini</th>
+        <th class="nosort">État</th>
+        <th class="nosort"><span class="sr">Actions</span></th>
       </tr></thead>
       <tbody id="p-body"></tbody>
     </table></div>
   </section>
 
-  <!-- MOUVEMENTS -->
+  <!-- MACHINES -->
+  <section id="v-machines" hidden>
+    <div class="mcols">
+      <nav aria-label="Machines">
+        <div class="mlist" id="m-list"></div>
+        <p class="hint" style="padding:0 6px">Une machine en panne ? Toutes ses pièces de rechange sont sur un seul écran.</p>
+      </nav>
+      <main id="m-main"></main>
+    </div>
+  </section>
+
+  <!-- COMPTOIR -->
+  <section id="v-comptoir" hidden>
+    <div class="cpt" id="c-root"></div>
+  </section>
+
+  <!-- HISTORIQUE -->
   <section id="v-mvts" hidden>
     <div class="toolbar">
       <div class="search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input id="h-q" placeholder="Filtrer l'historique…">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <label class="sr" for="h-q">Filtrer l'historique</label>
+        <input id="h-q" type="search" placeholder="Filtrer l'historique…">
       </div>
     </div>
-    <div class="card"><table>
+    <div class="card scroll"><table>
       <thead><tr>
         <th class="nosort">Date</th><th class="nosort">Référence</th><th class="nosort">Désignation</th>
         <th class="nosort">Mouvement</th><th class="nosort">Stock après</th><th class="nosort">Motif</th>
@@ -194,8 +303,8 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
 </div>
 
 <!-- Modals -->
-<div class="overlay" id="ov"><div class="modal" id="modal"></div></div>
-<div class="toast" id="toast"></div>
+<div class="overlay" id="ov"><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (() => {
@@ -203,21 +312,30 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
 const $ = s => document.querySelector(s);
 const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-
+const TABS = ["dash","pieces","machines","comptoir","mvts"];
+const EDIT_ICON = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>';
 
 let db = null, canWrite = true;
 let pieces = [], mvts = [];
-let tab = "pieces";
+let tab = "dash";
 let pSort = {k:"device", d:1};
+let pLvl = "";
 let loaded = {pieces:false};
+let curMachine = "";
+const cpt = { sel:null, dir:-1, n:1, motif:"", q:"" };
 
 /* ---------- utils ---------- */
 let toastT;
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
-function setStatus(msg, err){ const s=$("#status"); s.textContent=msg; s.classList.toggle("err",!!err); }
-function low(p){ const q=+p.quantity||0, min=(p.minQty===undefined||p.minQty==="")?null:+p.minQty; if(q<=0) return "zero"; if(min!==null && q<=min) return "low"; return "ok"; }
+function setStatus(msg, kind){ const s=$("#status"); s.textContent=msg; s.classList.toggle("err",kind==="err"); s.classList.toggle("ok",kind==="ok"); }
+function minOf(p){ return (p.minQty===undefined||p.minQty===null||p.minQty==="")?null:+p.minQty; }
+function low(p){ const q=+p.quantity||0, min=minOf(p); if(q<=0) return "zero"; if(min!==null && q<=min) return "low"; return "ok"; }
+const LVL = { ok:["En stock","t-ok"], low:["Stock bas","t-warn"], zero:["Rupture","t-bad"] };
+function tag(p){ const l=LVL[low(p)]; return `<span class="tag ${l[1]}">${l[0]}</span>`; }
+function toOrder(p){ const q=+p.quantity||0, min=minOf(p); return Math.max(1, (min===null?1:min*2) - q); }
 function fmtDate(ms){ const d=new Date(ms); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
-function cmp(a,b,k,d){ let x=a[k], y=b[k]; if(k==="quantity"){x=+x||0;y=+y||0; return (x-y)*d;} return norm(x).localeCompare(norm(y),"fr",{numeric:true})*d || norm(a.name).localeCompare(norm(b.name),"fr"); }
+function fmtShort(ms){ const d=new Date(ms); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
+function cmp(a,b,k,d){ let x=a[k], y=b[k]; if(k==="quantity"||k==="minQty"){x=+x||0;y=+y||0; return (x-y)*d;} return norm(x).localeCompare(norm(y),"fr",{numeric:true})*d || norm(a.name).localeCompare(norm(b.name),"fr"); }
 function writeErr(e){
   console.warn(e);
   if(e && e.code==="invalid_argument"){ canWrite=false; applyWrite(); toast("Vous n'avez pas les droits de modification sur ce stock."); }
@@ -226,96 +344,254 @@ function writeErr(e){
 }
 function applyWrite(){ document.querySelectorAll(".w").forEach(b=>b.disabled=!canWrite); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,10); }
+function byId(id){ return pieces.find(x=>x._id===id); }
+function alerts(){ return pieces.filter(p=>low(p)!=="ok"); }
 
-/* ---------- KPIs ---------- */
-function renderKpis(){
+/* ---------- Tableau de bord ---------- */
+function renderDash(){
   const total = pieces.reduce((s,p)=>s+(+p.quantity||0),0);
   const zero = pieces.filter(p=>low(p)==="zero").length;
   const lw = pieces.filter(p=>low(p)==="low").length;
-  $("#kpis").innerHTML = [
-    {v:pieces.length,l:"références en stock",go:()=>{goTab("pieces");$("#p-lvl").value="";renderPieces();}},
-    {v:total,l:"pièces au total"},
-    {v:zero,l:"références en rupture",cls:zero?"bad":"",go:()=>{goTab("pieces");$("#p-lvl").value="zero";renderPieces();}},
-    {v:lw,l:"sous le seuil mini",cls:lw?"warn":"",go:()=>{goTab("pieces");$("#p-lvl").value="low";renderPieces();}},
-  ].map((k,i)=>`<div class="kpi ${k.cls||""} ${k.go?"click":""}" data-i="${i}"><div class="v">${k.v}</div><div class="l">${k.l}</div></div>`).join("");
-  const items = [...$("#kpis").children];
-  kpiActions.length = 0;
-  [0,1,2,3].forEach(i=>{ items[i].onclick = () => KPI_GO[i] && KPI_GO[i](); });
-  $("#n-pieces").textContent = pieces.length;
-}
-let kpiActions = [];
-const KPI_GO = [
-  ()=>{goTab("pieces");$("#p-lvl").value="";renderPieces();}, null,
-  ()=>{goTab("pieces");$("#p-lvl").value="zero";renderPieces();},
-  ()=>{goTab("pieces");$("#p-lvl").value="low";renderPieces();},
-];
+  const week = mvts.filter(h=>h.at>=Date.now()-7*864e5).length;
+  $("#kpis").innerHTML = `
+    <button class="kpi ${zero?"bad":""}" data-go="zero"><span class="v">${zero}</span><span class="l">références en rupture</span></button>
+    <button class="kpi ${lw?"warn":""}" data-go="low"><span class="v">${lw}</span><span class="l">sous le seuil mini</span></button>
+    <button class="kpi" data-go=""><span class="v">${pieces.length}</span><span class="l">références suivies</span></button>
+    <div class="kpi"><span class="v">${total}</span><span class="l">pièces au total</span></div>
+    <button class="kpi" data-go="mvts"><span class="v">${week}</span><span class="l">mouvements sur 7 jours</span></button>`;
+  const n=$("#n-alert"); n.textContent=zero+lw; n.classList.toggle("bad",zero>0);
 
-/* ---------- Pieces ---------- */
+  const todo = alerts().sort((a,b)=>(low(a)==="zero"?0:1)-(low(b)==="zero"?0:1) || cmp(a,b,"device",1));
+  if(!loaded.pieces) $("#d-todo").innerHTML=`<div class="empty">Chargement du stock…</div>`;
+  else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Rien à commander : toutes les pièces sont au-dessus de leur seuil.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
+  else $("#d-todo").innerHTML = `<div class="scroll"><table><thead><tr>
+      <th class="nosort">Pièce</th><th class="nosort hide-m">Machine</th><th class="nosort">État</th><th class="nosort r">Stock / seuil</th><th class="nosort r">À commander</th><th class="nosort"><span class="sr">Actions</span></th>
+    </tr></thead><tbody>${todo.map(p=>`<tr data-id="${esc(p._id)}">
+      <td><div style="font-weight:500">${esc(p.name)}</div><div class="mono" style="color:var(--muted)">${esc(p.reference)}${p.location?" · "+esc(p.location):""}</div></td>
+      <td class="hide-m"><span class="dev">${esc(p.device||"—")}</span></td>
+      <td>${tag(p)}</td>
+      <td class="r" style="color:var(--muted)">${+p.quantity||0} / ${minOf(p)??"—"}</td>
+      <td class="r" style="font-weight:700">+${toOrder(p)}</td>
+      <td class="r"><button class="btn sm w" data-a="mvt">Entrée</button></td>
+    </tr>`).join("")}</tbody></table></div>`;
+
+  const feed = mvts.slice(0,8);
+  $("#d-feed").innerHTML = feed.length ? feed.map(h=>`<li>
+      <span class="tag d ${h.delta>0?"t-ok":"t-bad"}">${h.delta>0?"+":"−"}${Math.abs(h.delta)}</span>
+      <span class="t"><b>${esc(h.name)}</b><span class="hint">${esc(h.motif||(h.delta>0?"Entrée":"Sortie"))}</span></span>
+      <span class="mono" style="color:var(--muted)">${fmtShort(h.at)}</span>
+    </li>`).join("") : `<li class="hint" style="justify-content:center;padding:24px">Aucun mouvement enregistré pour l'instant.</li>`;
+  applyWrite();
+}
+$("#kpis").addEventListener("click", e=>{
+  const k=e.target.closest("[data-go]"); if(!k) return;
+  const g=k.dataset.go;
+  if(g==="mvts") return goTab("mvts");
+  setLvl(g); goTab("pieces");
+});
+$("#d-todo").addEventListener("click", e=>{
+  const b=e.target.closest("[data-a]"); if(!b) return;
+  const p=byId(b.closest("tr").dataset.id); if(p) openMvt(p, 1);
+});
+$("#d-hist").onclick=()=>goTab("mvts");
+$("#d-csv").onclick=()=>copyCsv(csv(alerts(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["location","Emplacement"],["quantity","Stock"],["minQty","Seuil mini"],[toOrder,"À commander"]]));
+
+/* ---------- Pièces ---------- */
 function devices(){ return [...new Set(pieces.map(p=>p.device).filter(Boolean))].sort((a,b)=>a==="Autres"?1:b==="Autres"?-1:a.localeCompare(b,"fr",{numeric:true})); }
 function renderDevSelect(){
   const sel=$("#p-dev"), cur=sel.value;
-  sel.innerHTML = `<option value="">Tous les appareils</option>` + devices().map(d=>`<option ${d===cur?"selected":""}>${esc(d)}</option>`).join("");
+  sel.innerHTML = `<option value="">Toutes les machines</option>` + devices().map(d=>`<option ${d===cur?"selected":""}>${esc(d)}</option>`).join("");
 }
+function setLvl(l){ pLvl=l; document.querySelectorAll("#p-lvl .chip").forEach(c=>c.classList.toggle("on",c.dataset.l===l)); renderPieces(); }
 function filteredPieces(){
-  const q=norm($("#p-q").value), dv=$("#p-dev").value, lv=$("#p-lvl").value;
+  const q=norm($("#p-q").value), dv=$("#p-dev").value;
   return pieces.filter(p=>
-    (!dv||p.device===dv) && (!lv||low(p)===lv) &&
-    (!q || norm(p.reference+" "+p.name+" "+p.note+" "+p.device).includes(q))
+    (!dv||p.device===dv) && (!pLvl||low(p)===pLvl) &&
+    (!q || norm(p.reference+" "+p.name+" "+(p.note||"")+" "+p.device+" "+(p.location||"")).includes(q))
   ).sort((a,b)=>cmp(a,b,pSort.k,pSort.d));
+}
+function qtyCtl(p){
+  const lv=low(p);
+  return `<div class="qty ${lv==="zero"?"zero":lv==="low"?"low":""}">
+    <button class="w" data-a="dec" aria-label="Sortie de 1">−</button>
+    <button class="q" data-a="mvt" title="Saisir un mouvement">${+p.quantity||0}</button>
+    <button class="w" data-a="inc" aria-label="Entrée de 1">+</button>
+  </div>`;
 }
 function renderPieces(){
   renderDevSelect();
+  $("#n-pieces").textContent = pieces.length;
   const list = filteredPieces();
   const body = $("#p-body");
-  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="6" class="empty">Chargement du stock…</td></tr>`; return; }
-  if(!list.length){ body.innerHTML=`<tr><td colspan="6" class="empty">${pieces.length?"Aucune pièce ne correspond à ces filtres.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</td></tr>`; return; }
-  body.innerHTML = list.map(p=>{
-    const lv=low(p);
-    return `<tr data-id="${esc(p._id)}">
+  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="8" class="empty">Chargement du stock…</td></tr>`; return; }
+  if(!list.length){ body.innerHTML=`<tr><td colspan="8" class="empty">${pieces.length?"Aucune pièce ne correspond à ces filtres.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</td></tr>`; return; }
+  body.innerHTML = list.map(p=>`<tr data-id="${esc(p._id)}">
       <td class="mono">${esc(p.reference)}</td>
-      <td>${esc(p.name)}${p.location?`<div class="hint">📍 ${esc(p.location)}</div>`:""}</td>
-      <td><span class="dev">${esc(p.device||"—")}</span></td>
-      <td><div class="qty ${lv==="zero"?"zero":lv==="low"?"low":""}">
-        <button class="w" data-a="dec" title="Sortie de 1">−</button>
-        <span class="q" data-a="mvt" title="Saisir un mouvement">${+p.quantity||0}</span>
-        <button class="w" data-a="inc" title="Entrée de 1">+</button>
-      </div></td>
-      <td class="note hide-m">${esc(p.note)}</td>
-      <td style="text-align:right"><button class="rowbtn" data-a="edit" title="Modifier"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></button></td>
-    </tr>`;
-  }).join("");
+      <td>${esc(p.name)}${p.note?`<div class="hint">${esc(p.note)}</div>`:""}</td>
+      <td class="hide-m"><span class="dev">${esc(p.device||"—")}</span></td>
+      <td class="hide-m mono" style="color:var(--muted)">${esc(p.location||"—")}</td>
+      <td>${qtyCtl(p)}</td>
+      <td class="hide-m" style="color:var(--muted)">${minOf(p)??"—"}</td>
+      <td>${tag(p)}</td>
+      <td class="r"><button class="rowbtn" data-a="edit" aria-label="Modifier la pièce">${EDIT_ICON}</button></td>
+    </tr>`).join("");
   applyWrite();
 }
-$("#p-body").addEventListener("click", e=>{
+function pieceAction(e){
   const b=e.target.closest("[data-a]"); if(!b) return;
-  const id=b.closest("tr").dataset.id, p=pieces.find(x=>x._id===id); if(!p) return;
+  const host=b.closest("[data-id]"); if(!host) return;
+  const p=byId(host.dataset.id); if(!p) return;
   const a=b.dataset.a;
   if(a==="inc") move(p, 1, "");
   else if(a==="dec") { if((+p.quantity||0)<=0) return toast("Stock déjà à zéro."); move(p, -1, ""); }
   else if(a==="mvt") openMvt(p);
   else if(a==="edit") openPiece(p);
-});
+}
+$("#p-body").addEventListener("click", pieceAction);
+$("#p-lvl").addEventListener("click", e=>{ const c=e.target.closest(".chip"); if(c) setLvl(c.dataset.l); });
+
 const busy = new Set();
 async function move(p, delta, motif){
-  if(!db||!canWrite) return;
-  if(busy.has(p._id)) return;
+  if(!db||!canWrite) return false;
+  if(busy.has(p._id)) return false;
   busy.add(p._id);
   const before=+p.quantity||0, after=Math.max(0,before+delta);
   try{
     await db.doc("pieces/"+p._id).update({quantity:after});
     await db.collection("mouvements").doc(uid()).set({pieceId:p._id, reference:p.reference||"", name:p.name||"", delta:after-before, qtyAfter:after, motif:motif||"", at:Date.now()});
-  }catch(e){ writeErr(e); }
+    return true;
+  }catch(e){ writeErr(e); return false; }
   finally{ busy.delete(p._id); }
 }
 
-/* ---------- History ---------- */
+/* ---------- Machines ---------- */
+function renderMachines(){
+  const ds = devices();
+  $("#n-machines").textContent = ds.length;
+  if(!curMachine || !ds.includes(curMachine)) curMachine = ds[0] || "";
+  if(!loaded.pieces){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Chargement…</div>`; $("#m-main").innerHTML=""; return; }
+  if(!ds.length){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Aucune machine. Indiquez l'appareil de chaque pièce pour les regrouper ici.</div>`; $("#m-main").innerHTML=""; return; }
+  $("#m-list").innerHTML = ds.map(d=>{
+    const list=pieces.filter(p=>p.device===d);
+    const z=list.some(p=>low(p)==="zero"), l=list.some(p=>low(p)==="low");
+    return `<button class="mbtn ${d===curMachine?"on":""}" data-m="${esc(d)}" ${d===curMachine?'aria-current="true"':""}>
+      <span class="nm">${esc(d)}</span>
+      ${z?'<span class="tag t-bad">Rupture</span>':l?'<span class="tag t-warn">Bas</span>':""}
+      <span class="c">${list.length}</span>
+    </button>`;
+  }).join("");
+
+  const mine = pieces.filter(p=>p.device===curMachine).sort((a,b)=>(a.location?0:1)-(b.location?0:1)||cmp(a,b,"name",1));
+  const total = mine.reduce((s,p)=>s+(+p.quantity||0),0);
+  const refs = new Set(mine.map(p=>norm(p.reference)));
+  const shared = pieces.filter(p=>p.device!==curMachine && p.reference && refs.has(norm(p.reference)));
+  $("#m-main").innerHTML = `
+    <div class="toolbar" style="margin:0">
+      <div style="flex:1 1 200px"><h2 class="sec" style="font-size:20px">${esc(curMachine)}</h2>
+      <div class="sub">${mine.length} référence${mine.length>1?"s":""} · ${total} pièce${total>1?"s":""}</div></div>
+      <button class="btn primary w" id="m-add">+ Pièce pour cette machine</button>
+    </div>
+    <div class="grid-cards">${mine.map(p=>{
+      const lv=low(p), min=minOf(p), q=+p.quantity||0;
+      const pct = min ? Math.min(100,Math.round(q/(min*3)*100)) : (q>0?100:0);
+      const col = lv==="zero"?"var(--bad)":lv==="low"?"var(--warn)":"var(--ok)";
+      return `<article class="pc" data-id="${esc(p._id)}">
+        <div class="top"><span class="mono" style="color:var(--muted)">${esc(p.reference)}</span>${tag(p)}</div>
+        <div class="nm">${esc(p.name)}</div>
+        <div><span class="qv ${lv}">${q}</span> <span class="hint">en stock${min!==null?" · seuil "+min:""}</span></div>
+        <div class="bar" aria-hidden="true"><i style="width:${Math.max(pct,2)}%;background:${col}"></i></div>
+        <div class="foot">
+          <span class="hint">Emplacement <span class="mono" style="color:var(--ink)">${esc(p.location||"—")}</span></span>
+          <span class="sp"></span>
+          <button class="rowbtn" data-a="edit" aria-label="Modifier la pièce">${EDIT_ICON}</button>
+          <button class="btn sm w" data-a="mvt">Mouvement</button>
+        </div>
+      </article>`;}).join("")}</div>
+    ${shared.length?`<h2 class="sec" style="margin-top:6px">Même référence sur d'autres machines</h2>
+    <div class="grid-cards">${shared.map(p=>`<div class="mini" data-id="${esc(p._id)}">
+      <div class="t"><div style="font-weight:500">${esc(p.name)}</div><div class="hint">${esc(p.device)} · <span class="mono">${esc(p.location||p.reference)}</span></div></div>
+      <span class="qv" style="font-weight:700">${+p.quantity||0}</span></div>`).join("")}</div>`:""}`;
+  $("#m-add").onclick=()=>openPiece(null, curMachine);
+  applyWrite();
+}
+$("#m-list").addEventListener("click", e=>{ const b=e.target.closest("[data-m]"); if(b){ curMachine=b.dataset.m; renderMachines(); } });
+$("#m-main").addEventListener("click", pieceAction);
+
+/* ---------- Comptoir ---------- */
+function recentPieces(){
+  const seen=new Set(), out=[];
+  for(const h of mvts){ if(seen.has(h.pieceId)) continue; seen.add(h.pieceId); const p=byId(h.pieceId); if(p) out.push(p); if(out.length>=5) break; }
+  return out;
+}
+function renderComptoir(focusSearch){
+  const root=$("#c-root");
+  if(!loaded.pieces){ root.innerHTML=`<div class="empty">Chargement du stock…</div>`; return; }
+  if(!pieces.length){ root.innerHTML=`<div class="empty">Aucune pièce pour l'instant. Ajoutez-en une dans l'onglet Pièces.</div>`; return; }
+  const q=norm(cpt.q);
+  const list = q ? pieces.filter(p=>norm(p.reference+" "+p.name+" "+p.device+" "+(p.location||"")).includes(q)).slice(0,8) : recentPieces();
+  let sel = cpt.sel && byId(cpt.sel);
+  if(!sel && list.length) { sel=list[0]; cpt.sel=sel._id; }
+  const reasons = cpt.dir<0 ? ["Réparation","Entretien","Casse"] : ["Livraison","Retour","Inventaire"];
+  const avail = sel ? (+sel.quantity||0) : 0;
+  const after = sel ? (cpt.dir<0 ? Math.max(0,avail-cpt.n) : avail+cpt.n) : 0;
+  root.innerHTML = `
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <label class="sr" for="c-q">Rechercher une pièce</label>
+      <input id="c-q" type="search" placeholder="Taper une référence ou une désignation" value="${esc(cpt.q)}" style="min-height:48px">
+    </div>
+    <div class="lbl">${q?"Résultats":"Pièces utilisées récemment"}</div>
+    <div class="plist">${list.length?list.map(p=>{const lv=low(p);return `<button class="pick ${sel&&p._id===sel._id?"on":""}" data-p="${esc(p._id)}">
+        <span class="t"><b>${esc(p.name)}</b><span class="mono" style="color:var(--muted)">${esc(p.reference)}${p.location?" · "+esc(p.location):""}${p.device?" · "+esc(p.device):""}</span></span>
+        <span class="qv ${lv}">${+p.quantity||0}</span></button>`;}).join(""):`<div class="hint">${q?"Aucune pièce ne correspond.":"Aucun mouvement récent : cherchez une pièce ci-dessus."}</div>`}</div>
+    ${sel?`
+    <div class="bigseg" role="group" aria-label="Type de mouvement">
+      <button class="out ${cpt.dir<0?"on":""}" data-dir="-1">Sortie −</button>
+      <button class="in ${cpt.dir>0?"on":""}" data-dir="1">Entrée +</button>
+    </div>
+    <div class="stepper">
+      <button data-n="-1" aria-label="Diminuer">−</button>
+      <div class="v"><b>${cpt.n}</b><span class="hint">reste ${after} après validation</span></div>
+      <button data-n="1" aria-label="Augmenter">+</button>
+    </div>
+    <div class="chips" role="group" aria-label="Motif">${reasons.map(r=>`<button class="chip ${cpt.motif===r?"on":""}" data-r="${esc(r)}">${r}</button>`).join("")}</div>
+    <label class="sr" for="c-motif">Motif, machine ou intervention</label>
+    <input class="free" id="c-motif" placeholder="Motif, machine ou intervention (facultatif)" value="${reasons.includes(cpt.motif)?"":esc(cpt.motif)}">
+    <button class="btn primary big w" id="c-ok">Valider ${cpt.dir<0?"la sortie":"l'entrée"}</button>`:""}`;
+  applyWrite();
+  if(focusSearch){ const i=$("#c-q"); i.focus(); i.setSelectionRange(i.value.length,i.value.length); }
+}
+$("#c-root").addEventListener("input", e=>{
+  if(e.target.id==="c-q"){ cpt.q=e.target.value; cpt.sel=null; renderComptoir(true); }
+  else if(e.target.id==="c-motif"){ cpt.motif=e.target.value; document.querySelectorAll("#c-root .chip").forEach(c=>c.classList.remove("on")); }
+});
+$("#c-root").addEventListener("click", async e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.p){ cpt.sel=t.dataset.p; cpt.n=1; return renderComptoir(); }
+  if(t.dataset.dir){ cpt.dir=+t.dataset.dir; cpt.motif=""; return renderComptoir(); }
+  if(t.dataset.n){ cpt.n=Math.max(1,cpt.n+(+t.dataset.n)); return renderComptoir(); }
+  if(t.dataset.r){ cpt.motif = cpt.motif===t.dataset.r ? "" : t.dataset.r; return renderComptoir(); }
+  if(t.id==="c-ok"){
+    const p=byId(cpt.sel); if(!p) return;
+    const avail=+p.quantity||0;
+    if(cpt.dir<0 && avail<=0) return toast("Stock déjà à zéro.");
+    if(cpt.dir<0 && cpt.n>avail) return toast(`Stock insuffisant (${avail} disponible).`);
+    const n=cpt.n, dir=cpt.dir;
+    if(await move(p, dir*n, cpt.motif.trim())){
+      toast(dir<0?`Sortie de ${n} enregistrée.`:`Entrée de ${n} enregistrée.`);
+      cpt.n=1; cpt.motif=""; renderComptoir();
+    }
+  }
+});
+
+/* ---------- Historique ---------- */
 function renderHist(){
   const q=norm($("#h-q").value);
   const list=mvts.filter(h=>!q||norm(h.reference+" "+h.name+" "+h.motif).includes(q));
   $("#h-body").innerHTML = list.length ? list.map(h=>`<tr>
     <td class="mono">${fmtDate(h.at)}</td><td class="mono">${esc(h.reference)}</td><td>${esc(h.name)}</td>
-    <td class="${h.delta>0?"plus":"minus"}">${h.delta>0?"+":""}${h.delta}</td><td>${h.qtyAfter}</td><td class="note">${esc(h.motif)}</td>
-  </tr>`).join("") : `<tr><td colspan="6" class="empty">Aucun mouvement enregistré pour l'instant. Chaque entrée/sortie de stock apparaîtra ici.</td></tr>`;
+    <td class="${h.delta>0?"plus":"minus"}">${h.delta>0?"+":"−"}${Math.abs(h.delta)}</td><td>${h.qtyAfter}</td><td class="note">${esc(h.motif)}</td>
+  </tr>`).join("") : `<tr><td colspan="6" class="empty">Aucun mouvement enregistré pour l'instant. Chaque entrée ou sortie de stock apparaîtra ici.</td></tr>`;
 }
 
 /* ---------- Modals ---------- */
@@ -324,23 +600,23 @@ function closeModal(){ $("#ov").classList.remove("on"); }
 $("#ov").addEventListener("mousedown", e=>{ if(e.target.id==="ov") closeModal(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
 
-function devOptions(cur){ const ds=devices(); if(cur && !ds.includes(cur)) ds.push(cur); return ds.map(d=>`<option ${d===cur?"selected":""}>${esc(d)}</option>`).join(""); }
+function devOptions(){ return devices().map(d=>`<option>${esc(d)}</option>`).join(""); }
 
-function openPiece(p){
-  const isNew=!p; p=p||{reference:"",name:"",device:$("#p-dev").value||"",quantity:0,note:"",family:"stock"};
+function openPiece(p, presetDevice){
+  const isNew=!p; p=p||{reference:"",name:"",device:presetDevice||$("#p-dev").value||"",quantity:0,note:"",family:"stock"};
   openModal(`<h2>${isNew?"Nouvelle pièce":"Modifier la pièce"}</h2>
   <form id="f">
     <div class="grid2">
-      <div class="fld"><label>Référence *</label><input name="reference" class="mono" required value="${esc(p.reference)}"></div>
-      <div class="fld"><label>Appareil *</label><input name="device" list="devlist" required value="${esc(p.device)}"><datalist id="devlist">${devOptions()}</datalist></div>
+      <div class="fld"><label for="f-ref">Référence *</label><input id="f-ref" name="reference" class="mono" required value="${esc(p.reference)}"></div>
+      <div class="fld"><label for="f-dev">Machine *</label><input id="f-dev" name="device" list="devlist" required value="${esc(p.device)}"><datalist id="devlist">${devOptions()}</datalist></div>
     </div>
-    <div class="fld"><label>Désignation *</label><input name="name" required value="${esc(p.name)}"></div>
+    <div class="fld"><label for="f-name">Désignation *</label><input id="f-name" name="name" required value="${esc(p.name)}"></div>
     <div class="grid2">
-      <div class="fld"><label>Quantité</label><input name="quantity" type="number" min="0" step="1" value="${+p.quantity||0}"></div>
-      <div class="fld"><label>Seuil mini (alerte)</label><input name="minQty" type="number" min="0" step="1" placeholder="aucun" value="${p.minQty??""}"></div>
+      <div class="fld"><label for="f-q">Quantité</label><input id="f-q" name="quantity" type="number" min="0" step="1" value="${+p.quantity||0}"></div>
+      <div class="fld"><label for="f-min">Seuil mini (alerte)</label><input id="f-min" name="minQty" type="number" min="0" step="1" placeholder="aucun" value="${p.minQty??""}"></div>
     </div>
-    <div class="fld"><label>Emplacement</label><input name="location" placeholder="ex. Étagère B2" value="${esc(p.location||"")}"></div>
-    <div class="fld"><label>Note</label><textarea name="note">${esc(p.note)}</textarea></div>
+    <div class="fld"><label for="f-loc">Emplacement</label><input id="f-loc" name="location" placeholder="ex. Étagère B2" value="${esc(p.location||"")}"></div>
+    <div class="fld"><label for="f-note">Note</label><textarea id="f-note" name="note">${esc(p.note)}</textarea></div>
     <div class="mfoot">
       ${isNew?"":`<span class="left" id="del-zone"><button type="button" class="btn danger w" id="del">Supprimer</button></span>`}
       <button type="button" class="btn" id="cancel">Annuler</button>
@@ -357,7 +633,7 @@ function openPiece(p){
       quantity:Math.max(0,parseInt(f.get("quantity"))||0), note:f.get("note").trim(), location:f.get("location").trim(),
       minQty: f.get("minQty")===""?null:Math.max(0,parseInt(f.get("minQty"))||0), family:p.family||"stock"};
     const dup = pieces.find(x=>x._id!==p._id && norm(x.reference)===norm(data.reference) && norm(x.device)===norm(data.device));
-    if(dup && !confirmDup){ confirmDup=true; toast("Cette référence existe déjà pour cet appareil. Cliquez à nouveau sur Enregistrer pour confirmer."); return; }
+    if(dup && !confirmDup){ confirmDup=true; toast("Cette référence existe déjà pour cette machine. Cliquez à nouveau sur Enregistrer pour confirmer."); return; }
     confirmDup=false;
     try{
       const id=isNew?uid():p._id;
@@ -370,15 +646,15 @@ function openPiece(p){
 }
 let confirmDup=false;
 
-function openMvt(p){
-  let dir=-1;
+function openMvt(p, startDir){
+  let dir=startDir||-1;
   openModal(`<h2>Mouvement de stock</h2>
   <p class="hint" style="margin-top:-8px"><span class="mono">${esc(p.reference)}</span> — ${esc(p.name)} · stock actuel : <b>${+p.quantity||0}</b></p>
   <form id="f">
-    <div class="seg"><button type="button" data-d="-1" class="on out">Sortie</button><button type="button" data-d="1" class="in">Entrée</button></div>
+    <div class="seg"><button type="button" data-d="-1" class="out ${dir<0?"on":""}">Sortie</button><button type="button" data-d="1" class="in ${dir>0?"on":""}">Entrée</button></div>
     <div class="grid2">
-      <div class="fld"><label>Quantité</label><input name="n" type="number" min="1" step="1" value="1" required></div>
-      <div class="fld"><label>Motif / client / machine</label><input name="motif" placeholder="ex. Intervention 78VCV09"></div>
+      <div class="fld"><label for="m-n">Quantité</label><input id="m-n" name="n" type="number" min="1" step="1" value="${dir>0?toOrder(p):1}" required></div>
+      <div class="fld"><label for="m-motif">Motif / machine / intervention</label><input id="m-motif" name="motif" placeholder="ex. Livraison fournisseur"></div>
     </div>
     <div class="mfoot"><button type="button" class="btn" id="cancel">Annuler</button><button class="btn primary w">Valider</button></div>
   </form>`);
@@ -390,14 +666,14 @@ function openMvt(p){
     e.preventDefault();
     const f=new FormData(e.target); const n=Math.max(1,parseInt(f.get("n"))||1);
     if(dir<0 && n>(+p.quantity||0)) return toast(`Stock insuffisant (${+p.quantity||0} disponible).`);
-    closeModal(); await move(p, dir*n, f.get("motif").trim());
-    toast(dir<0?`Sortie de ${n} enregistrée.`:`Entrée de ${n} enregistrée.`);
+    closeModal();
+    if(await move(p, dir*n, f.get("motif").trim())) toast(dir<0?`Sortie de ${n} enregistrée.`:`Entrée de ${n} enregistrée.`);
   };
 }
 
 function confirmDel(path, label){
   $("#del-zone").innerHTML = `<span class="hint">Supprimer ${esc(label)} ?</span> <button type="button" class="btn danger sm" id="del-yes">Oui, supprimer</button>`;
-  $("#del-yes").onclick = async ()=>{ try{ await db.doc(path).delete(); closeModal(); toast("Supprimé."); }catch(e){ writeErr(e); } };
+  $("#del-yes").onclick = async ()=>{ try{ await db.doc(path).delete(); closeModal(); toast("Pièce supprimée."); }catch(e){ writeErr(e); } };
 }
 
 /* ---------- CSV ---------- */
@@ -406,7 +682,7 @@ function csv(rows, cols){
   return [cols.map(c=>c[1]).join(";"), ...rows.map(r=>cols.map(c=>q(typeof c[0]==="function"?c[0](r):r[c[0]])).join(";"))].join("\n");
 }
 async function copyCsv(text){
-  try{ await navigator.clipboard.writeText(text); toast("CSV copié — collez-le dans Excel."); }
+  try{ await navigator.clipboard.writeText(text); toast("CSV copié : collez-le dans Excel."); }
   catch{ openModal(`<h2>Export CSV</h2><p class="hint">Sélectionnez le texte et copiez-le (Ctrl+C).</p><textarea class="csv" readonly>${esc(text)}</textarea><div class="mfoot"><button class="btn" id="cancel">Fermer</button></div>`); $("#cancel").onclick=closeModal; $("#modal textarea").select(); }
 }
 $("#p-csv").onclick=()=>copyCsv(csv(filteredPieces(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["quantity","Quantité"],["minQty","Seuil mini"],["location","Emplacement"],["note","Note"]]));
@@ -416,61 +692,78 @@ $("#imp-btn").onclick=()=>$("#imp-file").click();
 $("#imp-file").onchange=async e=>{
   const file=e.target.files[0]; e.target.value=""; if(!file||!db) return;
   let json; try{ json=JSON.parse(await file.text()); }catch{ return toast("Fichier JSON illisible."); }
-  const P=Array.isArray(json.pieces)?json.pieces:[], M=[];
+  const P=Array.isArray(json.pieces)?json.pieces:[];
   if(!P.length) return toast("Aucune pièce trouvée dans ce fichier.");
   let ok=0;
-  setStatus(`Import en cours… 0/${P.length+M.length}`);
+  setStatus(`Import en cours… 0/${P.length}`);
   try{
-    for(const [col,arr] of [["pieces",P]]){
-      for(const it of arr){
-        const {_id, ...rest} = it||{}; const id=(/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(String(_id||""))?String(_id):uid());
-        if(col==="pieces") rest.quantity=Math.max(0,parseInt(rest.quantity)||0);
-        await db.doc(col+"/"+id).set(rest); ok++;
-        if(ok%10===0) setStatus(`Import en cours… ${ok}/${P.length+M.length}`);
-      }
+    for(const it of P){
+      const {_id, ...rest} = it||{}; const id=(/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(String(_id||""))?String(_id):uid());
+      rest.quantity=Math.max(0,parseInt(rest.quantity)||0);
+      await db.doc("pieces/"+id).set(rest); ok++;
+      if(ok%10===0) setStatus(`Import en cours… ${ok}/${P.length}`);
     }
-    toast(`${ok} éléments importés.`);
+    toast(`${ok} pièces importées.`);
   }catch(err){ writeErr(err); }
-  setStatus("Synchronisé");
+  setStatus(canWrite?"Synchronisé":"Lecture seule", canWrite?"ok":"");
 };
 
-/* ---------- Tabs & sorting ---------- */
+/* ---------- Onglets & tri ---------- */
+function renderTab(){
+  if(tab==="dash") renderDash();
+  else if(tab==="pieces") renderPieces();
+  else if(tab==="machines") renderMachines();
+  else if(tab==="comptoir") renderComptoir();
+  else if(tab==="mvts") renderHist();
+}
 function goTab(t){
   tab=t;
-  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.tab===t));
-  ["pieces","mvts"].forEach(v=>$("#v-"+v).hidden = v!==t);
+  document.querySelectorAll(".tab").forEach(b=>{ const on=b.dataset.tab===t; b.classList.toggle("on",on); b.setAttribute("aria-selected",on); if(on){ const bar=$("#tabs"); bar.scrollLeft = b.offsetLeft - (bar.clientWidth - b.offsetWidth)/2; } });
+  TABS.forEach(v=>$("#v-"+v).hidden = v!==t);
   try{ history.replaceState(null,"","#"+t); }catch{}
+  renderTab();
 }
 $("#tabs").addEventListener("click",e=>{ const b=e.target.closest(".tab"); if(b) goTab(b.dataset.tab); });
-window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(["pieces","mvts"].includes(h)) goTab(h); });
+window.addEventListener("hashchange",()=>{ const h=location.hash.slice(1); if(TABS.includes(h)) goTab(h); });
 document.querySelectorAll("#v-pieces th[data-s]").forEach(th=>th.onclick=()=>{ const k=th.dataset.s; pSort = pSort.k===k?{k,d:-pSort.d}:{k,d:1}; renderPieces(); });
-["#p-q","#p-dev","#p-lvl"].forEach(s=>$(s).addEventListener("input",renderPieces));
+["#p-q","#p-dev"].forEach(s=>$(s).addEventListener("input",renderPieces));
 $("#h-q").addEventListener("input",renderHist);
 $("#p-add").onclick=()=>openPiece(null);
 
-function renderAll(){ renderKpis(); renderPieces(); renderHist(); }
+function refreshCounts(){
+  const z=pieces.filter(p=>low(p)==="zero").length, l=pieces.filter(p=>low(p)==="low").length;
+  const n=$("#n-alert"); n.textContent=z+l; n.classList.toggle("bad",z>0);
+  $("#n-pieces").textContent=pieces.length;
+  $("#n-machines").textContent=devices().length;
+}
+function renderAll(){ refreshCounts(); renderTab(); }
+function typingInComptoir(){ const a=document.activeElement; return tab==="comptoir" && a && a.tagName==="INPUT" && !!a.closest("#c-root"); }
 
-/* ---------- boot ---------- */
-const h0=location.hash.slice(1); if(["pieces","mvts"].includes(h0)) goTab(h0);
-renderAll();
+/* ---------- démarrage ---------- */
+const h0=location.hash.slice(1);
+goTab(TABS.includes(h0) ? h0 : (window.matchMedia("(max-width:760px)").matches ? "comptoir" : "dash"));
 
 (async ()=>{
-  if(!window.claude || !window.claude.use){ setStatus("Ouvrez cette page depuis Claude pour accéder au stock.", true); return; }
+  if(!window.claude || !window.claude.use){ setStatus("Ouvrez cette page depuis Claude pour accéder au stock.", "err"); return; }
   db = await window.claude.use("db");
-  if(!db){ setStatus("Stock inaccessible depuis cette vue (connectez-vous).", true); canWrite=false; applyWrite(); return; }
+  if(!db){ setStatus("Stock inaccessible depuis cette vue (connectez-vous).", "err"); canWrite=false; applyWrite(); return; }
   try{
     const user = await window.claude.use("user");
     if(user && user.can){ const c = await user.can("data.write"); if(c===false){ canWrite=false; applyWrite(); } }
   }catch{}
-  const timer=setTimeout(()=>setStatus("Le stock ne répond pas encore — les données peuvent être incomplètes.", true),10000);
-  const done=()=>{ if(loaded.pieces){ clearTimeout(timer); setStatus(canWrite?"Synchronisé":"Lecture seule"); } };
-  const onErr=e=>{ clearTimeout(timer); setStatus("Connexion au stock perdue. Rechargez la page.", true); console.warn(e); };
+  const timer=setTimeout(()=>setStatus("Le stock ne répond pas encore : les données peuvent être incomplètes.", "err"),10000);
+  const done=()=>{ if(loaded.pieces){ clearTimeout(timer); setStatus(canWrite?"Synchronisé":"Lecture seule", canWrite?"ok":""); } };
+  const onErr=e=>{ clearTimeout(timer); setStatus("Connexion au stock perdue. Rechargez la page.", "err"); console.warn(e); };
   db.collection("pieces").onSnapshot(s=>{
     pieces=s.docs.map(d=>({...d.data(),_id:d.id})); if(!s.metadata.fromCache) loaded.pieces=true; else loaded.pieces=loaded.pieces||s.size>0;
-    renderKpis(); renderPieces(); done();
+    if(typingInComptoir()) refreshCounts();
+    else renderAll();
+    done();
   }, onErr);
   db.collection("mouvements").orderBy("at","desc").limit(300).onSnapshot(s=>{
-    mvts=s.docs.map(d=>({...d.data(),_id:d.id})); renderHist();
+    mvts=s.docs.map(d=>({...d.data(),_id:d.id}));
+    if(typingInComptoir()) return;
+    renderAll();
   }, onErr);
 })();
 })();

@@ -30,6 +30,9 @@ const LOGIN_ERRORS = {
   "auth/invalid-email": "Adresse e-mail invalide.",
   "auth/too-many-requests": "Trop de tentatives : patientez quelques minutes.",
   "auth/network-request-failed": "Pas de connexion internet.",
+  "auth/invalid-api-key": "Clé Firebase invalide : vérifiez apiKey dans config.js.",
+  "auth/api-key-not-valid.-please-pass-a-valid-api-key.": "Clé Firebase invalide : vérifiez apiKey dans config.js.",
+  "auth/operation-not-allowed": "La connexion par e-mail n'est pas activée dans Firebase.",
   "auth/unauthorized-domain": "Cette adresse n'est pas autorisée dans Firebase (domaines autorisés)."
 };
 

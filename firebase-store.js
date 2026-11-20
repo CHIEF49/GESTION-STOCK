@@ -3,10 +3,10 @@
 // via l'évènement "stock-db", ou un message via "stock-error".
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 const fail0 = msg => window.dispatchEvent(new CustomEvent("stock-error", { detail: msg }));
-let firebaseConfig, initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
+let firebaseConfig, codeAccount, initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
     getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit;
 try {
-  ({ firebaseConfig } = await import("./config.js"));
+  ({ firebaseConfig, codeAccount } = await import("./config.js"));
 } catch (e) {
   console.error(e);
   fail0("Fichier config.js illisible : " + (e && e.message || e));
@@ -71,15 +71,38 @@ if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWit
   const form = $("#login-form");
   const msg = $("#login-msg");
 
+  let byCode = true;
+  const firstField = () => byCode ? form.code : form.email;
+  $("#login-switch").addEventListener("click", () => {
+    byCode = !byCode;
+    $("#mode-code").hidden = !byCode;
+    $("#mode-email").hidden = byCode;
+    $("#login-reset").hidden = byCode;
+    $("#login-switch").textContent = byCode ? "Connexion par e-mail" : "Connexion par code";
+    msg.textContent = "";
+    firstField().focus();
+  });
+
   form.addEventListener("submit", async e => {
     e.preventDefault();
     msg.textContent = "";
+    let email, password;
+    if (byCode) {
+      if (!codeAccount) { msg.textContent = "Connexion par code non configurée (config.js)."; return; }
+      email = codeAccount; password = form.code.value.trim();
+      if (!password) { msg.textContent = "Saisissez le code de l'atelier."; return; }
+    } else {
+      email = form.email.value.trim(); password = form.password.value;
+      if (!email || !password) { msg.textContent = "Saisissez votre e-mail et votre mot de passe."; return; }
+    }
     const btn = form.querySelector("button[type=submit]");
     btn.disabled = true;
     try {
-      await signInWithEmailAndPassword(auth, form.email.value.trim(), form.password.value);
+      await signInWithEmailAndPassword(auth, email, password);
     } catch (err) {
-      msg.textContent = LOGIN_ERRORS[err.code] || "Connexion impossible pour le moment, réessayez.";
+      const wrong = ["auth/invalid-credential", "auth/wrong-password", "auth/user-not-found", "auth/missing-password"].includes(err.code);
+      msg.textContent = byCode && wrong ? "Code incorrect." : (LOGIN_ERRORS[err.code] || "Connexion impossible pour le moment, réessayez.");
+      if (byCode) form.code.select();
     } finally { btn.disabled = false; }
   });
   $("#login-reset").addEventListener("click", async () => {
@@ -94,7 +117,7 @@ if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWit
     if (user) {
       login.hidden = true;
       $("#logout").hidden = false;
-      $("#who").textContent = user.email || "";
+      $("#who").textContent = user.email === codeAccount ? "Accès atelier" : (user.email || "");
       if (!started) {
         started = true;
         window.stockDb = makeDb(fs);
@@ -104,7 +127,7 @@ if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWit
       if (started) { location.reload(); return; }
       $("#logout").hidden = true;
       login.hidden = false;
-      form.email.focus();
+      firstField().focus();
       fail("Connectez-vous pour accéder au stock.");
     }
   });

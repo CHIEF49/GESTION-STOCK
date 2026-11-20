@@ -1,0 +1,19 @@
+rules_version = '2';
+// Règles de sécurité du stock.
+// Seuls les comptes dont l'e-mail figure dans la liste peuvent lire et modifier.
+// Remplacez l'adresse ci-dessous par la vôtre (ajoutez-en d'autres séparées par des virgules),
+// puis collez ce fichier dans la console Firebase › Firestore Database › Règles › Publier.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function autorise() {
+      return request.auth != null
+        && request.auth.token.email in ['votre.email@exemple.fr'];
+    }
+    match /pieces/{id} {
+      allow read, write: if autorise();
+    }
+    match /mouvements/{id} {
+      allow read, write: if autorise();
+    }
+  }
+}

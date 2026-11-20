@@ -9,3 +9,8 @@ export const firebaseConfig = {
   messagingSenderId: "406145797514",
   appId: "1:406145797514:web:48c2a2f81bdf7bc7d0cc73"
 };
+
+// Compte partagé utilisé par la connexion « code de l'atelier ».
+// Le code saisi dans l'appli est le mot de passe de ce compte (6 caractères minimum).
+// Ce compte se crée dans Firebase › Authentication › Utilisateurs ; l'adresse n'a pas besoin d'exister.
+export const codeAccount = "atelier@atelier-stock.app";

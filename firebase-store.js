@@ -1,10 +1,26 @@
 // Connexion à Firebase : authentification par e-mail et base Firestore.
 // Fournit à l'application un objet `db` (doc / collection / onSnapshot)
 // via l'évènement "stock-db", ou un message via "stock-error".
-import { firebaseConfig } from "./config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
+const fail0 = msg => window.dispatchEvent(new CustomEvent("stock-error", { detail: msg }));
+let firebaseConfig, initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
+    getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit;
+try {
+  ({ firebaseConfig } = await import("./config.js"));
+} catch (e) {
+  console.error(e);
+  fail0("Fichier config.js illisible : " + (e && e.message || e));
+  throw e;
+}
+try {
+  ({ initializeApp } = await import(SDK + "firebase-app.js"));
+  ({ getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } = await import(SDK + "firebase-auth.js"));
+  ({ getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit } = await import(SDK + "firebase-firestore.js"));
+} catch (e) {
+  console.error(e);
+  fail0("Impossible de charger Firebase (www.gstatic.com). Vérifiez la connexion internet ou un bloqueur de publicités.");
+  throw e;
+}
 
 const $ = s => document.querySelector(s);
 const fail = msg => window.dispatchEvent(new CustomEvent("stock-error", { detail: msg }));
@@ -39,9 +55,16 @@ const LOGIN_ERRORS = {
 if (!firebaseConfig || !firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("A_REMPLIR")) {
   fail("Configuration Firebase manquante : renseignez le fichier config.js.");
 } else {
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const fs = getFirestore(app);
+  let app, auth, fs;
+  try {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    fs = getFirestore(app);
+  } catch (e) {
+    console.error(e);
+    fail("Erreur Firebase au démarrage : " + (e && (e.code || e.message) || e));
+    throw e;
+  }
   let started = false;
 
   const login = $("#login");

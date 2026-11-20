@@ -342,6 +342,7 @@ let tab = "dash";
 let pSort = {k:"device", d:1};
 let pLvl = "";
 let loaded = {pieces:false};
+let loadErr = "";
 let curMachine = "";
 const cpt = { sel:null, dir:-1, n:1, motif:"", q:"" };
 
@@ -383,7 +384,7 @@ function renderDash(){
   const n=$("#n-alert"); n.textContent=zero+lw; n.classList.toggle("bad",zero>0);
 
   const todo = alerts().sort((a,b)=>(low(a)==="zero"?0:1)-(low(b)==="zero"?0:1) || cmp(a,b,"device",1));
-  if(!loaded.pieces) $("#d-todo").innerHTML=`<div class="empty">Chargement du stock…</div>`;
+  if(!loaded.pieces) $("#d-todo").innerHTML=`<div class="empty">${loadErr||"Chargement du stock…"}</div>`;
   else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Rien à commander : toutes les pièces sont au-dessus de leur seuil.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
   else $("#d-todo").innerHTML = `<div class="scroll"><table><thead><tr>
       <th class="nosort">Pièce</th><th class="nosort hide-m">Machine</th><th class="nosort">État</th><th class="nosort r">Stock / seuil</th><th class="nosort r">À commander</th><th class="nosort"><span class="sr">Actions</span></th>
@@ -444,7 +445,7 @@ function renderPieces(){
   $("#n-pieces").textContent = pieces.length;
   const list = filteredPieces();
   const body = $("#p-body");
-  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="8" class="empty">Chargement du stock…</td></tr>`; return; }
+  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="8" class="empty">${loadErr||"Chargement du stock…"}</td></tr>`; return; }
   if(!list.length){ body.innerHTML=`<tr><td colspan="8" class="empty">${pieces.length?"Aucune pièce ne correspond à ces filtres.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</td></tr>`; return; }
   body.innerHTML = list.map(p=>`<tr data-id="${esc(p._id)}">
       <td class="mono">${esc(p.reference)}</td>
@@ -490,7 +491,7 @@ function renderMachines(){
   const ds = devices();
   $("#n-machines").textContent = ds.length;
   if(!curMachine || !ds.includes(curMachine)) curMachine = ds[0] || "";
-  if(!loaded.pieces){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Chargement…</div>`; $("#m-main").innerHTML=""; return; }
+  if(!loaded.pieces){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">${loadErr||"Chargement…"}</div>`; $("#m-main").innerHTML=""; return; }
   if(!ds.length){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Aucune machine. Indiquez l'appareil de chaque pièce pour les regrouper ici.</div>`; $("#m-main").innerHTML=""; return; }
   $("#m-list").innerHTML = ds.map(d=>{
     const list=pieces.filter(p=>p.device===d);
@@ -546,7 +547,7 @@ function recentPieces(){
 }
 function renderComptoir(focusSearch){
   const root=$("#c-root");
-  if(!loaded.pieces){ root.innerHTML=`<div class="empty">Chargement du stock…</div>`; return; }
+  if(!loaded.pieces){ root.innerHTML=`<div class="empty">${loadErr||"Chargement du stock…"}</div>`; return; }
   if(!pieces.length){ root.innerHTML=`<div class="empty">Aucune pièce pour l'instant. Ajoutez-en une dans l'onglet Pièces.</div>`; return; }
   const q=norm(cpt.q);
   const list = q ? pieces.filter(p=>norm(p.reference+" "+p.name+" "+p.device+" "+(p.location||"")).includes(q)).slice(0,8) : recentPieces();
@@ -764,14 +765,20 @@ function typingInComptoir(){ const a=document.activeElement; return tab==="compt
 const h0=location.hash.slice(1);
 goTab(TABS.includes(h0) ? h0 : (window.matchMedia("(max-width:760px)").matches ? "comptoir" : "dash"));
 
-window.addEventListener("stock-error", e=>setStatus(e.detail, "err"));
+function showErr(m){ setStatus(m,"err"); loadErr=esc(m); renderTab(); }
+window.addEventListener("stock-error", e=>showErr(e.detail));
+setTimeout(()=>{ if(!window.stockDb && !loadErr && $("#login").hidden) showErr("Le module de connexion ne s'est pas chargé. Videz le cache du navigateur (Ctrl+F5) puis réessayez."); },10000);
 const dbReady = new Promise(r=>{ if(window.stockDb) r(window.stockDb); else window.addEventListener("stock-db", ()=>r(window.stockDb), {once:true}); });
 (async ()=>{
   db = await dbReady;
-  setStatus("Connexion…");
-  const timer=setTimeout(()=>setStatus("Le stock ne répond pas encore : les données peuvent être incomplètes.", "err"),10000);
+  loadErr=""; setStatus("Connexion…");
+  const timer=setTimeout(()=>{ if(!loaded.pieces) showErr("Le stock ne répond pas : vérifiez que la base Firestore est bien créée dans Firebase."); },10000);
   const done=()=>{ if(loaded.pieces){ clearTimeout(timer); setStatus(canWrite?"Synchronisé":"Lecture seule", canWrite?"ok":""); } };
-  const onErr=e=>{ clearTimeout(timer); setStatus(e&&e.code==="permission-denied"?"Ce compte n'a pas accès au stock.":"Connexion au stock perdue. Rechargez la page.", "err"); console.warn(e); };
+  const onErr=e=>{ clearTimeout(timer); console.warn(e);
+    const c=e&&e.code;
+    showErr(c==="permission-denied"?"Accès refusé : vérifiez que les règles Firestore sont publiées avec votre e-mail."
+      : c==="not-found"||c==="failed-precondition"?"Base Firestore introuvable : créez-la dans la console Firebase."
+      : "Connexion au stock impossible ("+(c||"erreur inconnue")+"). Rechargez la page."); };
   db.collection("pieces").onSnapshot(s=>{
     pieces=s.docs.map(d=>({...d.data(),_id:d.id})); if(!s.metadata.fromCache) loaded.pieces=true; else loaded.pieces=loaded.pieces||s.size>0;
     if(typingInComptoir()) refreshCounts();

@@ -4,7 +4,7 @@
 const SDK = "https://www.gstatic.com/firebasejs/10.12.2/";
 const fail0 = msg => window.dispatchEvent(new CustomEvent("stock-error", { detail: msg }));
 let firebaseConfig, codeAccount, initializeApp, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
-    getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit;
+    getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, query, orderBy, limit;
 try {
   ({ firebaseConfig, codeAccount } = await import("./config.js"));
 } catch (e) {
@@ -15,7 +15,7 @@ try {
 try {
   ({ initializeApp } = await import(SDK + "firebase-app.js"));
   ({ getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } = await import(SDK + "firebase-auth.js"));
-  ({ getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, limit } = await import(SDK + "firebase-firestore.js"));
+  ({ getFirestore, doc, collection, setDoc, updateDoc, deleteDoc, onSnapshot, getDocs, query, orderBy, limit } = await import(SDK + "firebase-firestore.js"));
 } catch (e) {
   console.error(e);
   fail0("Impossible de charger Firebase (www.gstatic.com). Vérifiez la connexion internet ou un bloqueur de publicités.");
@@ -34,6 +34,7 @@ function makeDb(fs){
     doc: id => ref(name + "/" + id),
     orderBy: (field, dir) => coll(name, [...cons, orderBy(field, dir)]),
     limit: n => coll(name, [...cons, limit(n)]),
+    get: () => getDocs(cons.length ? query(collection(fs, name), ...cons) : collection(fs, name)),
     onSnapshot: (cb, onErr) => onSnapshot(cons.length ? query(collection(fs, name), ...cons) : collection(fs, name), cb, onErr)
   });
   return { doc: ref, collection: name => coll(name, []) };

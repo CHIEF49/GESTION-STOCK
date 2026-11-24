@@ -258,6 +258,7 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
         <button class="chip" data-l="zero">Rupture</button>
       </div>
       <button class="btn" id="p-csv">Copier CSV</button>
+      <button class="btn" id="p-pdf">PDF</button>
       <button class="btn primary w" id="p-add">+ Nouvelle pièce</button>
     </div>
     <div class="card scroll"><table>
@@ -298,6 +299,7 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
         <label class="sr" for="h-q">Filtrer l'historique</label>
         <input id="h-q" type="search" placeholder="Filtrer l'historique…">
       </div>
+      <button class="btn primary" id="h-pdf">PDF du stock à une date</button>
     </div>
     <div class="card scroll"><table>
       <thead><tr>
@@ -620,6 +622,150 @@ function renderHist(){
     <td class="mono">${fmtDate(h.at)}</td><td class="mono">${esc(h.reference)}</td><td>${esc(h.name)}</td>
     <td class="${h.delta>0?"plus":"minus"}">${h.delta>0?"+":"−"}${Math.abs(h.delta)}</td><td>${h.qtyAfter}</td><td class="note">${esc(h.motif)}</td>
   </tr>`).join("") : `<tr><td colspan="6" class="empty">Aucun mouvement enregistré pour l'instant. Chaque entrée ou sortie de stock apparaîtra ici.</td></tr>`;
+}
+
+/* ---------- PDF : état du stock à une date ---------- */
+function loadScript(src){
+  return new Promise((ok,ko)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>ko(new Error("load "+src)); document.head.appendChild(s); });
+}
+let pdfLibs=null;
+function pdfReady(){
+  if(!pdfLibs) pdfLibs = loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js")
+    .then(()=>loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"))
+    .catch(e=>{ pdfLibs=null; throw e; });
+  return pdfLibs;
+}
+async function logoData(){
+  try{
+    const b=await (await fetch("logo.png")).blob();
+    const url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(b); });
+    const img=await new Promise((r,j)=>{ const i=new Image(); i.onload=()=>r(i); i.onerror=j; i.src=url; });
+    return {url, ratio:img.width/img.height};
+  }catch{ return null; }
+}
+const isoDay = d => { const z=new Date(d); z.setMinutes(z.getMinutes()-z.getTimezoneOffset()); return z.toISOString().slice(0,10); };
+const frDay = s => s.split("-").reverse().join("/");
+const pdfTxt = v => String(v ?? "").replace(/[−–—]/g,"-").replace(/[‘’]/g,"'").replace(/[“”]/g,'"');
+
+function openPdf(){
+  const today=isoDay(Date.now());
+  const first=today.slice(0,8)+"01";
+  openModal(`<h2>PDF de l'état du stock</h2>
+  <form id="f">
+    <div class="fld"><label for="pdf-d">Stock à la date du (fin de journée)</label><input id="pdf-d" name="d" type="date" max="${today}" value="${today}" required></div>
+    <div class="fld"><label for="pdf-dev">Appareil</label><select id="pdf-dev" name="dev"><option value="">Tous les appareils</option>${devices().map(d=>`<option>${esc(d)}</option>`).join("")}</select></div>
+    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" name="zero" checked> Inclure les pièces à 0</label>
+    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" name="mv" id="pdf-mv"> Joindre le détail des mouvements depuis le</label>
+    <div class="fld"><input id="pdf-from" name="from" type="date" max="${today}" value="${first}" disabled></div>
+    <p class="hint" id="pdf-msg" style="margin:0 0 6px">Les quantités passées sont reconstituées à partir de l'historique des mouvements.</p>
+    <div class="mfoot"><button type="button" class="btn" id="cancel">Annuler</button><button class="btn primary" id="pdf-go">Télécharger le PDF</button></div>
+  </form>`);
+  $("#cancel").onclick=closeModal;
+  $("#pdf-mv").onchange=e=>{ $("#pdf-from").disabled=!e.target.checked; };
+  $("#f").onsubmit=async e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+    const day=f.get("d"); if(!day) return;
+    const opts={day, dev:f.get("dev")||"", zero:!!f.get("zero"), from:f.get("mv")?f.get("from"):null};
+    if(opts.from && opts.from>day) return toast("La date de début des mouvements doit précéder la date du stock.");
+    const btn=$("#pdf-go"); btn.disabled=true; btn.textContent="Préparation…";
+    try{ await makePdf(opts); closeModal(); toast("PDF téléchargé."); }
+    catch(err){ console.error(err); $("#pdf-msg").textContent = /load /.test(err&&err.message) ? "Impossible de charger le générateur de PDF : vérifiez la connexion internet." : "Le PDF n'a pas pu être créé. Réessayez."; $("#pdf-msg").style.color="var(--bad)"; btn.disabled=false; btn.textContent="Télécharger le PDF"; }
+  };
+}
+$("#h-pdf").onclick=openPdf;
+$("#p-pdf").onclick=openPdf;
+
+async function makePdf({day, dev, zero, from}){
+  if(!db) throw new Error("db");
+  const end = new Date(day+"T23:59:59.999").getTime();
+  const [_, snap, logo] = await Promise.all([pdfReady(), db.collection("mouvements").orderBy("at","asc").get(), logoData()]);
+  const all = snap.docs.map(d=>({...d.data(), _id:d.id})).filter(m=>typeof m.at==="number");
+  // dernier mouvement avant la date, premier après, par pièce
+  const before={}, after={};
+  for(const m of all){
+    if(m.at<=end) before[m.pieceId]=m;
+    else if(!after[m.pieceId]) after[m.pieceId]=m;
+  }
+  const rows=[];
+  const seen=new Set();
+  for(const p of pieces){
+    seen.add(p._id);
+    let q;
+    if(before[p._id]) q=+before[p._id].qtyAfter||0;
+    else if(after[p._id]){
+      const m=after[p._id];
+      if(m.motif==="Création") continue;          // pièce créée après la date
+      q=(+m.qtyAfter||0)-(+m.delta||0);
+    } else q=+p.quantity||0;
+    rows.push({device:p.device||"", reference:p.reference||"", name:p.name||"", location:p.location||"", q});
+  }
+  // pièces supprimées depuis, connues par leurs mouvements
+  for(const id in before){
+    if(seen.has(id)) continue;
+    const m=before[id];
+    rows.push({device:"", reference:m.reference||"", name:(m.name||"")+" (supprimée depuis)", location:"", q:+m.qtyAfter||0});
+  }
+  let list=rows.filter(r=>(!dev||r.device===dev) && (zero||r.q>0));
+  list.sort((a,b)=>(a.device==="Autres")-(b.device==="Autres") || a.device.localeCompare(b.device,"fr",{numeric:true}) || a.name.localeCompare(b.name,"fr"));
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:"mm", format:"a4"});
+  const W=doc.internal.pageSize.getWidth(), M=14, NAVY=[51,50,90], SKY=[220,241,251];
+  let y=M;
+  if(logo){ const h=16; doc.addImage(logo.url,"PNG",M,y,h*logo.ratio,h); }
+  doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...NAVY);
+  doc.text(pdfTxt("État du stock au "+frDay(day)), W-M, y+7, {align:"right"});
+  doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(110);
+  doc.text(pdfTxt("Atelier Fabien - "+(dev?("Appareil : "+dev):"Tous les appareils")), W-M, y+12.5, {align:"right"});
+  doc.text(pdfTxt("Édité le "+new Date().toLocaleDateString("fr-FR")+" à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})), W-M, y+17, {align:"right"});
+  y+=24;
+  doc.setDrawColor(...NAVY); doc.setLineWidth(0.8); doc.line(M,y,W-M,y); y+=7;
+
+  const tot=list.reduce((s,r)=>s+r.q,0), rup=list.filter(r=>r.q<=0).length;
+  doc.setFontSize(10); doc.setTextColor(40);
+  doc.text(pdfTxt(`${list.length} références  ·  ${tot} pièces au total  ·  ${rup} en rupture`), M, y); y+=4;
+
+  doc.autoTable({
+    startY:y+2, margin:{left:M,right:M,bottom:16},
+    head:[["Appareil","Référence","Désignation","Emplacement","Qté"]],
+    body:list.map(r=>[pdfTxt(r.device||"-"), pdfTxt(r.reference), pdfTxt(r.name), pdfTxt(r.location||"-"), String(r.q)]),
+    styles:{font:"helvetica", fontSize:8.5, cellPadding:1.8, textColor:30, lineColor:[226,225,234], lineWidth:0.1},
+    headStyles:{fillColor:NAVY, textColor:255, fontStyle:"bold"},
+    alternateRowStyles:{fillColor:[247,247,250]},
+    columnStyles:{0:{cellWidth:24}, 1:{cellWidth:38, font:"courier", fontSize:8}, 3:{cellWidth:26}, 4:{cellWidth:13, halign:"right", fontStyle:"bold"}},
+    didParseCell:d=>{ if(d.section==="body" && d.column.index===4 && d.cell.raw==="0") d.cell.styles.textColor=[201,42,42]; },
+  });
+
+  if(from){
+    const t0=new Date(from+"T00:00:00").getTime();
+    const ids=dev?new Set(pieces.filter(p=>p.device===dev).map(p=>p._id)):null;
+    const mv=all.filter(m=>m.at>=t0 && m.at<=end && (!ids||ids.has(m.pieceId)));
+    let yy=doc.lastAutoTable.finalY+10;
+    if(yy>doc.internal.pageSize.getHeight()-40){ doc.addPage(); yy=M+6; }
+    doc.setFont("helvetica","bold"); doc.setFontSize(12); doc.setTextColor(...NAVY);
+    doc.text(pdfTxt(`Mouvements du ${frDay(from)} au ${frDay(day)}`), M, yy);
+    doc.autoTable({
+      startY:yy+3, margin:{left:M,right:M,bottom:16},
+      head:[["Date","Référence","Désignation","Mouvement","Stock après","Motif"]],
+      body: mv.length ? mv.map(m=>[pdfTxt(fmtDate(m.at)), pdfTxt(m.reference), pdfTxt(m.name), (m.delta>0?"+":"-")+Math.abs(m.delta), String(m.qtyAfter), pdfTxt(m.motif||"")])
+                      : [[{content:"Aucun mouvement sur cette période.", colSpan:6, styles:{halign:"center", textColor:120}}]],
+      styles:{font:"helvetica", fontSize:8.5, cellPadding:1.8, textColor:30, lineColor:[226,225,234], lineWidth:0.1},
+      headStyles:{fillColor:NAVY, textColor:255, fontStyle:"bold"},
+      alternateRowStyles:{fillColor:[247,247,250]},
+      columnStyles:{0:{cellWidth:26}, 1:{cellWidth:34, font:"courier", fontSize:8}, 3:{cellWidth:20, halign:"right", fontStyle:"bold"}, 4:{cellWidth:18, halign:"right"}},
+      didParseCell:d=>{ if(d.section==="body" && d.column.index===3 && typeof d.cell.raw==="string") d.cell.styles.textColor = d.cell.raw.startsWith("+")?[43,138,62]:[201,42,42]; },
+    });
+  }
+
+  const n=doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){
+    doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(130);
+    const H=doc.internal.pageSize.getHeight();
+    doc.text(pdfTxt("KITVIA - Atelier Fabien - État du stock au "+frDay(day)), M, H-8);
+    doc.text(`Page ${i} / ${n}`, W-M, H-8, {align:"right"});
+  }
+  doc.save(`stock-${day}${dev?"-"+dev.replace(/[^A-Za-z0-9]+/g,"_"):""}.pdf`);
 }
 
 /* ---------- Modals ---------- */

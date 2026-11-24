@@ -131,6 +131,8 @@ td.note{color:var(--muted);font-size:13px;max-width:260px;white-space:pre-line}
 .mlist{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px;display:flex;flex-direction:column;gap:2px}
 .mbtn{display:flex;align-items:center;gap:6px;min-height:44px;padding:0 10px;border-radius:8px;border:0;background:none;cursor:pointer;text-align:left;width:100%}
 .mbtn:hover{background:var(--grey-soft)}
+.mfam{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+.mfam:first-child{padding-top:4px}
 .mbtn.on{background:var(--accent-soft);font-weight:500}
 .mbtn .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mbtn .c{font-size:12px;font-weight:600;border-radius:20px;padding:1px 8px;background:var(--grey-soft)}
@@ -361,6 +363,12 @@ let pLvl = "";
 let loaded = {pieces:false};
 let loadErr = "";
 let curMachine = "";
+// Familles de machines : chaque famille regroupe des machines (le nom doit être identique au champ « Appareil » des pièces).
+// Les machines listées ici apparaissent même si aucune pièce ne leur est encore rattachée.
+const FAMILLES = {
+  "SKYLA": ["KBIO 5", "KBIO 7"],
+};
+function familyOf(d){ for(const f in FAMILLES) if(FAMILLES[f].some(x=>norm(x)===norm(d))) return f; return ""; }
 const cpt = { sel:null, dir:-1, n:1, motif:"", q:"" };
 
 /* ---------- utils ---------- */
@@ -431,7 +439,7 @@ $("#d-hist").onclick=()=>goTab("mvts");
 $("#d-csv").onclick=()=>copyCsv(csv(alerts(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["location","Emplacement"],["quantity","Stock"]]));
 
 /* ---------- Pièces ---------- */
-function devices(){ return [...new Set(pieces.map(p=>p.device).filter(Boolean))].sort((a,b)=>a==="Autres"?1:b==="Autres"?-1:a.localeCompare(b,"fr",{numeric:true})); }
+function devices(){ return [...new Set([...pieces.map(p=>p.device).filter(Boolean), ...Object.values(FAMILLES).flat()])].sort((a,b)=>a==="Autres"?1:b==="Autres"?-1:a.localeCompare(b,"fr",{numeric:true})); }
 function renderDevSelect(){
   const sel=$("#p-dev"), cur=sel.value;
   sel.innerHTML = `<option value="">Toutes les machines</option>` + devices().map(d=>`<option ${d===cur?"selected":""}>${esc(d)}</option>`).join("");
@@ -504,7 +512,7 @@ function renderMachines(){
   if(!curMachine || !ds.includes(curMachine)) curMachine = ds[0] || "";
   if(!loaded.pieces){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">${loadErr||"Chargement…"}</div>`; $("#m-main").innerHTML=""; return; }
   if(!ds.length){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Aucune machine. Indiquez l'appareil de chaque pièce pour les regrouper ici.</div>`; $("#m-main").innerHTML=""; return; }
-  $("#m-list").innerHTML = ds.map(d=>{
+  const mbtn = d=>{
     const list=pieces.filter(p=>p.device===d);
     const z=list.some(p=>low(p)==="zero");
     return `<button class="mbtn ${d===curMachine?"on":""}" data-m="${esc(d)}" ${d===curMachine?'aria-current="true"':""}>
@@ -512,7 +520,13 @@ function renderMachines(){
       ${z?'<span class="tag t-bad">Rupture</span>':""}
       <span class="c">${list.length}</span>
     </button>`;
-  }).join("");
+  };
+  const fams = Object.keys(FAMILLES).sort((a,b)=>a.localeCompare(b,"fr"));
+  const loose = ds.filter(d=>!familyOf(d));
+  $("#m-list").innerHTML = fams.map(f=>{
+      const ms=ds.filter(d=>familyOf(d)===f);
+      return ms.length?`<div class="mfam">${esc(f)}</div>`+ms.map(mbtn).join(""):"";
+    }).join("") + (loose.length?(fams.length?`<div class="mfam">Autres machines</div>`:"")+loose.map(mbtn).join(""):"");
 
   const mine = pieces.filter(p=>p.device===curMachine).sort((a,b)=>(a.location?0:1)-(b.location?0:1)||cmp(a,b,"name",1));
   const total = mine.reduce((s,p)=>s+(+p.quantity||0),0);
@@ -520,10 +534,11 @@ function renderMachines(){
   const shared = pieces.filter(p=>p.device!==curMachine && p.reference && refs.has(norm(p.reference)));
   $("#m-main").innerHTML = `
     <div class="toolbar" style="margin:0">
-      <div style="flex:1 1 200px"><h2 class="sec" style="font-size:20px">${esc(curMachine)}</h2>
+      <div style="flex:1 1 200px">${familyOf(curMachine)?`<div class="hint" style="font-weight:600;letter-spacing:.04em">${esc(familyOf(curMachine))}</div>`:""}<h2 class="sec" style="font-size:20px">${esc(curMachine)}</h2>
       <div class="sub">${mine.length} référence${mine.length>1?"s":""} · ${total} pièce${total>1?"s":""}</div></div>
       <button class="btn primary w" id="m-add">+ Pièce pour cette machine</button>
     </div>
+    ${mine.length?"":`<div class="card empty">Aucune pièce rattachée à cette machine pour l'instant. Ajoutez-en une avec « + Pièce pour cette machine ».</div>`}
     <div class="grid-cards">${mine.map(p=>{
       const lv=low(p), q=+p.quantity||0;
       return `<article class="pc" data-id="${esc(p._id)}">

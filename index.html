@@ -233,7 +233,6 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
           <button class="btn sm" id="d-csv">Copier CSV</button>
         </div>
         <div id="d-todo"></div>
-        <p class="hint" style="padding:10px 14px;margin:0;border-top:1px solid var(--line)">Quantité suggérée : de quoi remonter au double du seuil mini (1 pièce s'il n'y a pas de seuil).</p>
       </div>
       <div class="side card">
         <div class="chead"><h2 class="sec">Derniers mouvements</h2></div>
@@ -256,7 +255,6 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
       <div class="chips" id="p-lvl" role="group" aria-label="Filtrer par état">
         <button class="chip on" data-l="">Tout</button>
         <button class="chip" data-l="ok">En stock</button>
-        <button class="chip" data-l="low">Stock bas</button>
         <button class="chip" data-l="zero">Rupture</button>
       </div>
       <button class="btn" id="p-csv">Copier CSV</button>
@@ -269,7 +267,6 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
         <th data-s="device" class="hide-m">Appareil</th>
         <th data-s="location" class="hide-m">Emplacement</th>
         <th data-s="quantity">Qté</th>
-        <th data-s="minQty" class="hide-m">Seuil mini</th>
         <th class="nosort">État</th>
         <th class="nosort"><span class="sr">Actions</span></th>
       </tr></thead>
@@ -368,14 +365,13 @@ const cpt = { sel:null, dir:-1, n:1, motif:"", q:"" };
 let toastT;
 function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),2600); }
 function setStatus(msg, kind){ const s=$("#status"); s.textContent=msg; s.classList.toggle("err",kind==="err"); s.classList.toggle("ok",kind==="ok"); }
-function minOf(p){ return (p.minQty===undefined||p.minQty===null||p.minQty==="")?null:+p.minQty; }
-function low(p){ const q=+p.quantity||0, min=minOf(p); if(q<=0) return "zero"; if(min!==null && q<=min) return "low"; return "ok"; }
-const LVL = { ok:["En stock","t-ok"], low:["Stock bas","t-warn"], zero:["Rupture","t-bad"] };
+function low(p){ return (+p.quantity||0)<=0 ? "zero" : "ok"; }
+const LVL = { ok:["En stock","t-ok"], zero:["Rupture","t-bad"] };
 function tag(p){ const l=LVL[low(p)]; return `<span class="tag ${l[1]}">${l[0]}</span>`; }
-function toOrder(p){ const q=+p.quantity||0, min=minOf(p); return Math.max(1, (min===null?1:min*2) - q); }
+function toOrder(p){ return 1; }
 function fmtDate(ms){ const d=new Date(ms); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit",year:"2-digit"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
 function fmtShort(ms){ const d=new Date(ms); return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}); }
-function cmp(a,b,k,d){ let x=a[k], y=b[k]; if(k==="quantity"||k==="minQty"){x=+x||0;y=+y||0; return (x-y)*d;} return norm(x).localeCompare(norm(y),"fr",{numeric:true})*d || norm(a.name).localeCompare(norm(b.name),"fr"); }
+function cmp(a,b,k,d){ let x=a[k], y=b[k]; if(k==="quantity"){x=+x||0;y=+y||0; return (x-y)*d;} return norm(x).localeCompare(norm(y),"fr",{numeric:true})*d || norm(a.name).localeCompare(norm(b.name),"fr"); }
 function writeErr(e){
   console.warn(e);
   if(e && (e.code==="permission-denied"||e.code==="invalid_argument")){ canWrite=false; applyWrite(); toast("Vous n'avez pas les droits de modification sur ce stock."); }
@@ -391,27 +387,23 @@ function alerts(){ return pieces.filter(p=>low(p)!=="ok"); }
 function renderDash(){
   const total = pieces.reduce((s,p)=>s+(+p.quantity||0),0);
   const zero = pieces.filter(p=>low(p)==="zero").length;
-  const lw = pieces.filter(p=>low(p)==="low").length;
   const week = mvts.filter(h=>h.at>=Date.now()-7*864e5).length;
   $("#kpis").innerHTML = `
     <button class="kpi ${zero?"bad":""}" data-go="zero"><span class="v">${zero}</span><span class="l">références en rupture</span></button>
-    <button class="kpi ${lw?"warn":""}" data-go="low"><span class="v">${lw}</span><span class="l">sous le seuil mini</span></button>
     <button class="kpi" data-go=""><span class="v">${pieces.length}</span><span class="l">références suivies</span></button>
     <div class="kpi"><span class="v">${total}</span><span class="l">pièces au total</span></div>
     <button class="kpi" data-go="mvts"><span class="v">${week}</span><span class="l">mouvements sur 7 jours</span></button>`;
-  const n=$("#n-alert"); n.textContent=zero+lw; n.classList.toggle("bad",zero>0);
+  const n=$("#n-alert"); n.textContent=zero; n.classList.toggle("bad",zero>0);
 
-  const todo = alerts().sort((a,b)=>(low(a)==="zero"?0:1)-(low(b)==="zero"?0:1) || cmp(a,b,"device",1));
+  const todo = alerts().sort((a,b)=>cmp(a,b,"device",1));
   if(!loaded.pieces) $("#d-todo").innerHTML=`<div class="empty">${loadErr||"Chargement du stock…"}</div>`;
-  else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Rien à commander : toutes les pièces sont au-dessus de leur seuil.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
+  else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Rien à commander : aucune pièce en rupture.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
   else $("#d-todo").innerHTML = `<div class="scroll"><table><thead><tr>
-      <th class="nosort">Pièce</th><th class="nosort hide-m">Machine</th><th class="nosort">État</th><th class="nosort r">Stock / seuil</th><th class="nosort r">À commander</th><th class="nosort"><span class="sr">Actions</span></th>
+      <th class="nosort">Pièce</th><th class="nosort hide-m">Machine</th><th class="nosort">État</th><th class="nosort"><span class="sr">Actions</span></th>
     </tr></thead><tbody>${todo.map(p=>`<tr data-id="${esc(p._id)}">
       <td><div style="font-weight:500">${esc(p.name)}</div><div class="mono" style="color:var(--muted)">${esc(p.reference)}${p.location?" · "+esc(p.location):""}</div></td>
       <td class="hide-m"><span class="dev">${esc(p.device||"—")}</span></td>
       <td>${tag(p)}</td>
-      <td class="r" style="color:var(--muted)">${+p.quantity||0} / ${minOf(p)??"—"}</td>
-      <td class="r" style="font-weight:700">+${toOrder(p)}</td>
       <td class="r"><button class="btn sm w" data-a="mvt">Entrée</button></td>
     </tr>`).join("")}</tbody></table></div>`;
 
@@ -434,7 +426,7 @@ $("#d-todo").addEventListener("click", e=>{
   const p=byId(b.closest("tr").dataset.id); if(p) openMvt(p, 1);
 });
 $("#d-hist").onclick=()=>goTab("mvts");
-$("#d-csv").onclick=()=>copyCsv(csv(alerts(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["location","Emplacement"],["quantity","Stock"],["minQty","Seuil mini"],[toOrder,"À commander"]]));
+$("#d-csv").onclick=()=>copyCsv(csv(alerts(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["location","Emplacement"],["quantity","Stock"]]));
 
 /* ---------- Pièces ---------- */
 function devices(){ return [...new Set(pieces.map(p=>p.device).filter(Boolean))].sort((a,b)=>a==="Autres"?1:b==="Autres"?-1:a.localeCompare(b,"fr",{numeric:true})); }
@@ -452,7 +444,7 @@ function filteredPieces(){
 }
 function qtyCtl(p){
   const lv=low(p);
-  return `<div class="qty ${lv==="zero"?"zero":lv==="low"?"low":""}">
+  return `<div class="qty ${lv==="zero"?"zero":""}">
     <button class="w" data-a="dec" aria-label="Sortie de 1">−</button>
     <button class="q" data-a="mvt" title="Saisir un mouvement">${+p.quantity||0}</button>
     <button class="w" data-a="inc" aria-label="Entrée de 1">+</button>
@@ -463,15 +455,14 @@ function renderPieces(){
   $("#n-pieces").textContent = pieces.length;
   const list = filteredPieces();
   const body = $("#p-body");
-  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="8" class="empty">${loadErr||"Chargement du stock…"}</td></tr>`; return; }
-  if(!list.length){ body.innerHTML=`<tr><td colspan="8" class="empty">${pieces.length?"Aucune pièce ne correspond à ces filtres.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</td></tr>`; return; }
+  if(!loaded.pieces){ body.innerHTML=`<tr><td colspan="7" class="empty">${loadErr||"Chargement du stock…"}</td></tr>`; return; }
+  if(!list.length){ body.innerHTML=`<tr><td colspan="7" class="empty">${pieces.length?"Aucune pièce ne correspond à ces filtres.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</td></tr>`; return; }
   body.innerHTML = list.map(p=>`<tr data-id="${esc(p._id)}">
       <td class="mono">${esc(p.reference)}</td>
       <td>${esc(p.name)}${p.note?`<div class="hint">${esc(p.note)}</div>`:""}</td>
       <td class="hide-m"><span class="dev">${esc(p.device||"—")}</span></td>
       <td class="hide-m mono" style="color:var(--muted)">${esc(p.location||"—")}</td>
       <td>${qtyCtl(p)}</td>
-      <td class="hide-m" style="color:var(--muted)">${minOf(p)??"—"}</td>
       <td>${tag(p)}</td>
       <td class="r"><button class="rowbtn" data-a="edit" aria-label="Modifier la pièce">${EDIT_ICON}</button></td>
     </tr>`).join("");
@@ -513,10 +504,10 @@ function renderMachines(){
   if(!ds.length){ $("#m-list").innerHTML=`<div class="hint" style="padding:10px">Aucune machine. Indiquez l'appareil de chaque pièce pour les regrouper ici.</div>`; $("#m-main").innerHTML=""; return; }
   $("#m-list").innerHTML = ds.map(d=>{
     const list=pieces.filter(p=>p.device===d);
-    const z=list.some(p=>low(p)==="zero"), l=list.some(p=>low(p)==="low");
+    const z=list.some(p=>low(p)==="zero");
     return `<button class="mbtn ${d===curMachine?"on":""}" data-m="${esc(d)}" ${d===curMachine?'aria-current="true"':""}>
       <span class="nm">${esc(d)}</span>
-      ${z?'<span class="tag t-bad">Rupture</span>':l?'<span class="tag t-warn">Bas</span>':""}
+      ${z?'<span class="tag t-bad">Rupture</span>':""}
       <span class="c">${list.length}</span>
     </button>`;
   }).join("");
@@ -532,14 +523,11 @@ function renderMachines(){
       <button class="btn primary w" id="m-add">+ Pièce pour cette machine</button>
     </div>
     <div class="grid-cards">${mine.map(p=>{
-      const lv=low(p), min=minOf(p), q=+p.quantity||0;
-      const pct = min ? Math.min(100,Math.round(q/(min*3)*100)) : (q>0?100:0);
-      const col = lv==="zero"?"var(--bad)":lv==="low"?"var(--warn)":"var(--ok)";
+      const lv=low(p), q=+p.quantity||0;
       return `<article class="pc" data-id="${esc(p._id)}">
         <div class="top"><span class="mono" style="color:var(--muted)">${esc(p.reference)}</span>${tag(p)}</div>
         <div class="nm">${esc(p.name)}</div>
-        <div><span class="qv ${lv}">${q}</span> <span class="hint">en stock${min!==null?" · seuil "+min:""}</span></div>
-        <div class="bar" aria-hidden="true"><i style="width:${Math.max(pct,2)}%;background:${col}"></i></div>
+        <div><span class="qv ${lv}">${q}</span> <span class="hint">en stock</span></div>
         <div class="foot">
           <span class="hint">Emplacement <span class="mono" style="color:var(--ink)">${esc(p.location||"—")}</span></span>
           <span class="sp"></span>
@@ -653,9 +641,8 @@ function openPiece(p, presetDevice){
     <div class="fld"><label for="f-name">Désignation *</label><input id="f-name" name="name" required value="${esc(p.name)}"></div>
     <div class="grid2">
       <div class="fld"><label for="f-q">Quantité</label><input id="f-q" name="quantity" type="number" min="0" step="1" value="${+p.quantity||0}"></div>
-      <div class="fld"><label for="f-min">Seuil mini (alerte)</label><input id="f-min" name="minQty" type="number" min="0" step="1" placeholder="aucun" value="${p.minQty??""}"></div>
+      <div class="fld"><label for="f-loc">Emplacement</label><input id="f-loc" name="location" placeholder="ex. Étagère B2" value="${esc(p.location||"")}"></div>
     </div>
-    <div class="fld"><label for="f-loc">Emplacement</label><input id="f-loc" name="location" placeholder="ex. Étagère B2" value="${esc(p.location||"")}"></div>
     <div class="fld"><label for="f-note">Note</label><textarea id="f-note" name="note">${esc(p.note)}</textarea></div>
     <div class="mfoot">
       ${isNew?"":`<span class="left" id="del-zone"><button type="button" class="btn danger w" id="del">Supprimer</button></span>`}
@@ -670,8 +657,7 @@ function openPiece(p, presetDevice){
     e.preventDefault(); if(!db) return;
     const f=new FormData(e.target);
     const data={reference:f.get("reference").trim(), name:f.get("name").trim(), device:f.get("device").trim(),
-      quantity:Math.max(0,parseInt(f.get("quantity"))||0), note:f.get("note").trim(), location:f.get("location").trim(),
-      minQty: f.get("minQty")===""?null:Math.max(0,parseInt(f.get("minQty"))||0), family:p.family||"stock"};
+      quantity:Math.max(0,parseInt(f.get("quantity"))||0), note:f.get("note").trim(), location:f.get("location").trim(), family:p.family||"stock"};
     const dup = pieces.find(x=>x._id!==p._id && norm(x.reference)===norm(data.reference) && norm(x.device)===norm(data.device));
     if(dup && !confirmDup){ confirmDup=true; toast("Cette référence existe déjà pour cette machine. Cliquez à nouveau sur Enregistrer pour confirmer."); return; }
     confirmDup=false;
@@ -725,7 +711,7 @@ async function copyCsv(text){
   try{ await navigator.clipboard.writeText(text); toast("CSV copié : collez-le dans Excel."); }
   catch{ openModal(`<h2>Export CSV</h2><p class="hint">Sélectionnez le texte et copiez-le (Ctrl+C).</p><textarea class="csv" readonly>${esc(text)}</textarea><div class="mfoot"><button class="btn" id="cancel">Fermer</button></div>`); $("#cancel").onclick=closeModal; $("#modal textarea").select(); }
 }
-$("#p-csv").onclick=()=>copyCsv(csv(filteredPieces(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["quantity","Quantité"],["minQty","Seuil mini"],["location","Emplacement"],["note","Note"]]));
+$("#p-csv").onclick=()=>copyCsv(csv(filteredPieces(),[["reference","Référence"],["name","Désignation"],["device","Appareil"],["quantity","Quantité"],["location","Emplacement"],["note","Note"]]));
 
 /* ---------- Import ---------- */
 $("#imp-btn").onclick=()=>$("#imp-file").click();
@@ -771,8 +757,8 @@ $("#h-q").addEventListener("input",renderHist);
 $("#p-add").onclick=()=>openPiece(null);
 
 function refreshCounts(){
-  const z=pieces.filter(p=>low(p)==="zero").length, l=pieces.filter(p=>low(p)==="low").length;
-  const n=$("#n-alert"); n.textContent=z+l; n.classList.toggle("bad",z>0);
+  const z=pieces.filter(p=>low(p)==="zero").length;
+  const n=$("#n-alert"); n.textContent=z; n.classList.toggle("bad",z>0);
   $("#n-pieces").textContent=pieces.length;
   $("#n-machines").textContent=devices().length;
 }

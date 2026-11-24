@@ -2,9 +2,9 @@
 
 Application web de gestion du stock de pièces détachées de l'atelier.
 
-- **Tableau de bord** : indicateurs (rupture, sous le seuil mini, mouvements sur 7 jours), liste « À commander » avec quantité suggérée, derniers mouvements
-- **Pièces** : tableau complet (référence, désignation, machine, emplacement, quantité, seuil mini, état), filtres et entrées / sorties en un clic
-- **Machines** : les pièces regroupées par machine, en cartes avec jauge quantité / seuil
+- **Tableau de bord** : indicateurs (ruptures, mouvements sur 7 jours), liste « À commander » des pièces en rupture, derniers mouvements
+- **Pièces** : tableau complet (référence, désignation, machine, emplacement, quantité, état), filtres et entrées / sorties en un clic
+- **Machines** : les pièces regroupées par machine, en cartes avec la quantité en stock
 - **Comptoir** : écran mobile pour saisir une sortie ou une entrée en quelques gestes (ouvert par défaut sur téléphone)
 - **Historique** des mouvements
 - Export CSV et import JSON (`{ "pieces": [...] }`)

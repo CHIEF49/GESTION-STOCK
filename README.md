@@ -6,7 +6,7 @@ Application web de gestion du stock de pièces détachées de l'atelier.
 - **Pièces** : tableau complet (référence, désignation, machine, emplacement, quantité, état), filtres et entrées / sorties en un clic
 - **Machines** : les pièces regroupées par machine, en cartes avec la quantité en stock
 - **Comptoir** : écran mobile pour saisir une sortie ou une entrée en quelques gestes (ouvert par défaut sur téléphone)
-- **Historique** des mouvements, avec un **PDF de l'état du stock à la date choisie** (quantités reconstituées à partir des mouvements, filtre par appareil, détail des mouvements en option)
+- **Historique** des mouvements, avec un **export PDF** : état du stock à la date choisie (quantités reconstituées à partir des mouvements), mouvements d'une période, ou les deux ; filtre par appareil
 - Export CSV et import JSON (`{ "pieces": [...] }`)
 
 La page est hébergée par GitHub Pages ; les données sont stockées dans Firebase (Firestore), avec connexion par e-mail et mot de passe.

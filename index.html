@@ -650,24 +650,44 @@ const pdfTxt = v => String(v ?? "").replace(/[−–—]/g,"-").replace(/[‘’
 function openPdf(){
   const today=isoDay(Date.now());
   const first=today.slice(0,8)+"01";
-  openModal(`<h2>PDF de l'état du stock</h2>
+  openModal(`<h2>Exporter en PDF</h2>
   <form id="f">
-    <div class="fld"><label for="pdf-d">Stock à la date du (fin de journée)</label><input id="pdf-d" name="d" type="date" max="${today}" value="${today}" required></div>
+    <div class="fld"><label>Contenu</label>
+      <div class="seg" id="pdf-kind" style="margin:0">
+        <button type="button" data-k="stock" class="on in">État du stock</button>
+        <button type="button" data-k="mv" class="in">Mouvements</button>
+        <button type="button" data-k="both" class="in">Les deux</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="fld" id="pdf-from-f" hidden><label for="pdf-from">Mouvements du</label><input id="pdf-from" name="from" type="date" max="${today}" value="${first}"></div>
+      <div class="fld"><label for="pdf-d" id="pdf-d-l">Stock à la date du</label><input id="pdf-d" name="d" type="date" max="${today}" value="${today}" required></div>
+    </div>
     <div class="fld"><label for="pdf-dev">Appareil</label><select id="pdf-dev" name="dev"><option value="">Tous les appareils</option>${devices().map(d=>`<option>${esc(d)}</option>`).join("")}</select></div>
-    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" name="zero" checked> Inclure les pièces à 0</label>
-    <label style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" name="mv" id="pdf-mv"> Joindre le détail des mouvements depuis le</label>
-    <div class="fld"><input id="pdf-from" name="from" type="date" max="${today}" value="${first}" disabled></div>
-    <p class="hint" id="pdf-msg" style="margin:0 0 6px">Les quantités passées sont reconstituées à partir de l'historique des mouvements.</p>
+    <label id="pdf-zero" style="display:flex;gap:8px;align-items:center;margin:4px 0 8px"><input type="checkbox" name="zero" checked> Inclure les pièces à 0</label>
+    <p class="hint" id="pdf-msg" style="margin:0 0 6px"></p>
     <div class="mfoot"><button type="button" class="btn" id="cancel">Annuler</button><button class="btn primary" id="pdf-go">Télécharger le PDF</button></div>
   </form>`);
+  let kind="stock";
+  const hints={stock:"Quantités en fin de journée, reconstituées à partir de l'historique des mouvements.", mv:"Toutes les entrées et sorties de la période, du plus ancien au plus récent.", both:"L'état du stock à la date de fin, suivi des mouvements de la période."};
+  const sync=()=>{
+    $("#modal").querySelectorAll("#pdf-kind button").forEach(b=>b.classList.toggle("on",b.dataset.k===kind));
+    $("#pdf-from-f").hidden = kind==="stock";
+    $("#pdf-zero").hidden = kind==="mv";
+    $("#pdf-d-l").textContent = kind==="stock" ? "Stock à la date du" : "au";
+    const m=$("#pdf-msg"); m.textContent=hints[kind]; m.style.color="";
+  };
+  $("#pdf-kind").onclick=e=>{ const b=e.target.closest("[data-k]"); if(b){ kind=b.dataset.k; sync(); } };
+  sync();
   $("#cancel").onclick=closeModal;
-  $("#pdf-mv").onchange=e=>{ $("#pdf-from").disabled=!e.target.checked; };
   $("#f").onsubmit=async e=>{
     e.preventDefault();
     const f=new FormData(e.target);
     const day=f.get("d"); if(!day) return;
-    const opts={day, dev:f.get("dev")||"", zero:!!f.get("zero"), from:f.get("mv")?f.get("from"):null};
-    if(opts.from && opts.from>day) return toast("La date de début des mouvements doit précéder la date du stock.");
+    const from = kind==="stock" ? null : f.get("from");
+    if(kind!=="stock" && !from) return toast("Choisissez la date de début des mouvements.");
+    if(from && from>day) return toast("La date de début doit précéder la date de fin.");
+    const opts={day, dev:f.get("dev")||"", zero:!!f.get("zero"), from, stock:kind!=="mv"};
     const btn=$("#pdf-go"); btn.disabled=true; btn.textContent="Préparation…";
     try{ await makePdf(opts); closeModal(); toast("PDF téléchargé."); }
     catch(err){ console.error(err); $("#pdf-msg").textContent = /load /.test(err&&err.message) ? "Impossible de charger le générateur de PDF : vérifiez la connexion internet." : "Le PDF n'a pas pu être créé. Réessayez."; $("#pdf-msg").style.color="var(--bad)"; btn.disabled=false; btn.textContent="Télécharger le PDF"; }
@@ -676,7 +696,7 @@ function openPdf(){
 $("#h-pdf").onclick=openPdf;
 $("#p-pdf").onclick=openPdf;
 
-async function makePdf({day, dev, zero, from}){
+async function makePdf({day, dev, zero, from, stock=true}){
   if(!db) throw new Error("db");
   const end = new Date(day+"T23:59:59.999").getTime();
   const [_, snap, logo] = await Promise.all([pdfReady(), db.collection("mouvements").orderBy("at","asc").get(), logoData()]);
@@ -715,13 +735,15 @@ async function makePdf({day, dev, zero, from}){
   let y=M;
   if(logo){ const h=16; doc.addImage(logo.url,"PNG",M,y,h*logo.ratio,h); }
   doc.setFont("helvetica","bold"); doc.setFontSize(16); doc.setTextColor(...NAVY);
-  doc.text(pdfTxt("État du stock au "+frDay(day)), W-M, y+7, {align:"right"});
+  const title = stock ? "État du stock au "+frDay(day) : `Mouvements du ${frDay(from)} au ${frDay(day)}`;
+  doc.text(pdfTxt(title), W-M, y+7, {align:"right"});
   doc.setFont("helvetica","normal"); doc.setFontSize(9); doc.setTextColor(110);
   doc.text(pdfTxt("Atelier Fabien - "+(dev?("Appareil : "+dev):"Tous les appareils")), W-M, y+12.5, {align:"right"});
   doc.text(pdfTxt("Édité le "+new Date().toLocaleDateString("fr-FR")+" à "+new Date().toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"})), W-M, y+17, {align:"right"});
   y+=24;
   doc.setDrawColor(...NAVY); doc.setLineWidth(0.8); doc.line(M,y,W-M,y); y+=7;
 
+  if(stock){
   const tot=list.reduce((s,r)=>s+r.q,0), rup=list.filter(r=>r.q<=0).length;
   doc.setFontSize(10); doc.setTextColor(40);
   doc.text(pdfTxt(`${list.length} références  ·  ${tot} pièces au total  ·  ${rup} en rupture`), M, y); y+=4;
@@ -736,15 +758,24 @@ async function makePdf({day, dev, zero, from}){
     columnStyles:{0:{cellWidth:24}, 1:{cellWidth:38, font:"courier", fontSize:8}, 3:{cellWidth:26}, 4:{cellWidth:13, halign:"right", fontStyle:"bold"}},
     didParseCell:d=>{ if(d.section==="body" && d.column.index===4 && d.cell.raw==="0") d.cell.styles.textColor=[201,42,42]; },
   });
+  }
 
   if(from){
     const t0=new Date(from+"T00:00:00").getTime();
     const ids=dev?new Set(pieces.filter(p=>p.device===dev).map(p=>p._id)):null;
     const mv=all.filter(m=>m.at>=t0 && m.at<=end && (!ids||ids.has(m.pieceId)));
-    let yy=doc.lastAutoTable.finalY+10;
-    if(yy>doc.internal.pageSize.getHeight()-40){ doc.addPage(); yy=M+6; }
-    doc.setFont("helvetica","bold"); doc.setFontSize(12); doc.setTextColor(...NAVY);
-    doc.text(pdfTxt(`Mouvements du ${frDay(from)} au ${frDay(day)}`), M, yy);
+    let yy;
+    if(stock){
+      yy=doc.lastAutoTable.finalY+10;
+      if(yy>doc.internal.pageSize.getHeight()-40){ doc.addPage(); yy=M+6; }
+      doc.setFont("helvetica","bold"); doc.setFontSize(12); doc.setTextColor(...NAVY);
+      doc.text(pdfTxt(`Mouvements du ${frDay(from)} au ${frDay(day)}`), M, yy);
+    } else {
+      const ins=mv.filter(m=>m.delta>0).reduce((s,m)=>s+m.delta,0), outs=mv.filter(m=>m.delta<0).reduce((s,m)=>s-m.delta,0);
+      doc.setFont("helvetica","normal"); doc.setFontSize(10); doc.setTextColor(40);
+      doc.text(pdfTxt(`${mv.length} mouvements  ·  ${ins} pièces entrées  ·  ${outs} pièces sorties`), M, y);
+      yy=y+2;
+    }
     doc.autoTable({
       startY:yy+3, margin:{left:M,right:M,bottom:16},
       head:[["Date","Référence","Désignation","Mouvement","Stock après","Motif"]],
@@ -762,10 +793,10 @@ async function makePdf({day, dev, zero, from}){
   for(let i=1;i<=n;i++){
     doc.setPage(i); doc.setFont("helvetica","normal"); doc.setFontSize(8); doc.setTextColor(130);
     const H=doc.internal.pageSize.getHeight();
-    doc.text(pdfTxt("KITVIA - Atelier Fabien - État du stock au "+frDay(day)), M, H-8);
+    doc.text(pdfTxt("KITVIA - Atelier Fabien - "+title), M, H-8);
     doc.text(`Page ${i} / ${n}`, W-M, H-8, {align:"right"});
   }
-  doc.save(`stock-${day}${dev?"-"+dev.replace(/[^A-Za-z0-9]+/g,"_"):""}.pdf`);
+  doc.save(`${stock?"stock-"+day:"mouvements-"+from+"_"+day}${dev?"-"+dev.replace(/[^A-Za-z0-9]+/g,"_"):""}.pdf`);
 }
 
 /* ---------- Modals ---------- */

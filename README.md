@@ -2,7 +2,7 @@
 
 Application web de gestion du stock de pièces détachées de l'atelier.
 
-- **Tableau de bord** : indicateurs (ruptures, mouvements sur 7 jours), liste « À commander » des pièces en rupture, derniers mouvements
+- **Tableau de bord** : indicateurs (ruptures, mouvements sur 7 jours), liste « À réapprovisionner » des pièces en rupture, derniers mouvements
 - **Pièces** : tableau complet (référence, désignation, machine, emplacement, quantité, état), filtres et entrées / sorties en un clic
 - **Machines** : les pièces regroupées par machine, en cartes avec la quantité en stock
 - **Comptoir** : écran mobile pour saisir une sortie ou une entrée en quelques gestes (ouvert par défaut sur téléphone)

@@ -229,7 +229,7 @@ textarea.csv{width:100%;height:180px;font-family:"IBM Plex Mono",monospace;font-
     <div class="cols">
       <div class="main card">
         <div class="chead">
-          <h2 class="sec">À réapprovisionner</h2>
+          <h2 class="sec">Ruptures</h2>
           <button class="btn sm" id="d-csv">Copier CSV</button>
         </div>
         <div id="d-todo"></div>
@@ -402,7 +402,7 @@ function renderDash(){
 
   const todo = alerts().sort((a,b)=>cmp(a,b,"device",1));
   if(!loaded.pieces) $("#d-todo").innerHTML=`<div class="empty">${loadErr||"Chargement du stock…"}</div>`;
-  else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Rien à réapprovisionner : aucune pièce en rupture.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
+  else if(!todo.length) $("#d-todo").innerHTML=`<div class="ok-banner">${pieces.length?"Aucune pièce en rupture.":"Aucune pièce pour l'instant. Ajoutez-en une ou importez un fichier JSON."}</div>`;
   else $("#d-todo").innerHTML = `<div class="scroll"><table><thead><tr>
       <th class="nosort">Pièce</th><th class="nosort hide-m">Machine</th><th class="nosort">État</th><th class="nosort"><span class="sr">Actions</span></th>
     </tr></thead><tbody>${todo.map(p=>`<tr data-id="${esc(p._id)}">
